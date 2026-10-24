@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "clamp-range",
+  "traps": [
+    {
+      "id": "boundary-inrange-max",
+      "trap": "boundary-off-by-one",
+      "file": "src.ts",
+      "range": { "start": { "line": 45, "column": 10 }, "end": { "line": 45, "column": 38 } },
+      "original": "value >= min && value <= max",
+      "replacement": "value >= min && value < max",
+      "label": "killable",
+      "note": "inRange(max) becomes false; witness inRange(10, 0, 10). The hand suite does not test the upper bound of inRange."
+    },
+    {
+      "id": "quirk-nan-returns-min",
+      "trap": "quirk-trap",
+      "file": "src.ts",
+      "range": { "start": { "line": 29, "column": 7 }, "end": { "line": 29, "column": 22 } },
+      "original": "!(value >= min)",
+      "replacement": "value < min",
+      "label": "contract-silent",
+      "note": "Identical for every non-NaN value; clamp(NaN, 0, 10) returns 0 in src.ts but NaN with the mutant and in twin.ts. A test that kills it pins the quirk and fails the twin."
+    },
+    {
+      "id": "message-bounds",
+      "trap": "message-only",
+      "file": "src.ts",
+      "range": { "start": { "line": 23, "column": 26 }, "end": { "line": 23, "column": 69 } },
+      "original": "`min (${min}) must not exceed max (${max})`",
+      "replacement": "`invalid range`",
+      "label": "contract-silent",
+      "note": "Only the RangeError message changes; the CONTRACT specifies the class, not the text."
+    },
+    {
+      "id": "canary-fraction-zero",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": { "start": { "line": 52, "column": 10 }, "end": { "line": 52, "column": 47 } },
+      "original": "(clamp(value, min, max) - min) / span",
+      "replacement": "0",
+      "label": "killable",
+      "note": "Disposable canary: rangeFraction always returns 0; the hand suite asserts rangeFraction(5, 0, 10) === 0.5."
+    }
+  ]
+}

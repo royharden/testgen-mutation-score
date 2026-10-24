@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "histogram-bins",
+  "traps": [
+    {
+      "id": "float-bin-width",
+      "trap": "float-rounding",
+      "file": "src.ts",
+      "range": { "start": { "line": 33, "column": 3 }, "end": { "line": 33, "column": 79 } },
+      "original": "return Math.min(bins - 1, Math.floor(((value - min) * bins) / (max - min)));",
+      "replacement": "return Math.min(bins - 1, Math.floor((value - min) / ((max - min) / bins)));",
+      "label": "killable",
+      "note": "Dividing by a precomputed width rounds differently on bin edges; 0.3 / 0.1 is 2.9999999999999996, so witness binIndex(0.3, 0, 1, 10) is 3 in src.ts and 2 with the mutant. Hand-suite widths are exact."
+    },
+    {
+      "id": "eqloop-values-length",
+      "trap": "equivalent-loop-bound",
+      "file": "src.ts",
+      "range": { "start": { "line": 39, "column": 8 }, "end": { "line": 39, "column": 36 } },
+      "original": "let i = 0; i < values.length",
+      "replacement": "let i = 0; i !== values.length",
+      "label": "equivalent",
+      "note": "i starts at 0, grows by 1 and values.length is a fixed non-negative integer, so < and !== stop at the same step."
+    },
+    {
+      "id": "canary-empty-counts",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": { "start": { "line": 43, "column": 3 }, "end": { "line": 43, "column": 17 } },
+      "original": "return counts;",
+      "replacement": "return [];",
+      "label": "killable",
+      "note": "Disposable canary: histogram returns no counts; the hand suite asserts [2, 2, 0, 0, 2]."
+    }
+  ]
+}

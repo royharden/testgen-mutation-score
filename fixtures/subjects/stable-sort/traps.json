@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "stable-sort",
+  "traps": [
+    {
+      "id": "stability-insertion-ties",
+      "trap": "sort-stability",
+      "file": "src.ts",
+      "range": { "start": { "line": 36, "column": 22 }, "end": { "line": 36, "column": 54 } },
+      "original": "keys[order[j]!]! * direction > k",
+      "replacement": "keys[order[j]!]! * direction >= k",
+      "label": "killable",
+      "note": "Equal keys are moved past each other, reversing ties; witness sortBy([{k:1,id:'a'},{k:1,id:'b'}], x => x.k) gives b before a. The hand suite never sorts ties."
+    },
+    {
+      "id": "eqloop-keys-length",
+      "trap": "equivalent-loop-bound",
+      "file": "src.ts",
+      "range": { "start": { "line": 33, "column": 8 }, "end": { "line": 33, "column": 34 } },
+      "original": "let i = 0; i < keys.length",
+      "replacement": "let i = 0; i !== keys.length",
+      "label": "equivalent",
+      "note": "i starts at 0, grows by 1 and keys.length is a fixed non-negative integer, so < and !== stop at the same step."
+    },
+    {
+      "id": "exctype-key-error",
+      "trap": "exception-type-only",
+      "file": "src.ts",
+      "range": { "start": { "line": 23, "column": 7 }, "end": { "line": 23, "column": 27 } },
+      "original": "throw new TypeError(",
+      "replacement": "throw new Error(",
+      "label": "contract-silent",
+      "note": "Only the error class changes; the CONTRACT says an error is thrown without naming its class."
+    },
+    {
+      "id": "canary-sorted-false",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": { "start": { "line": 63, "column": 3 }, "end": { "line": 63, "column": 15 } },
+      "original": "return true;",
+      "replacement": "return false;",
+      "label": "killable",
+      "note": "Disposable canary: isSortedBy is never true; the hand suite asserts isSortedBy([1, 2, 2, 3]) is true."
+    }
+  ]
+}

@@ -64,6 +64,36 @@ export function isSafeRelPath(p: string): boolean {
 }
 export const RelPathSchema = z.string().max(512).refine(isSafeRelPath, "expected a safe relative POSIX path");
 
+/**
+ * Normalise an engine- or author-supplied path to relative POSIX form: backslashes become `/` and leading
+ * `./` segments are removed. Returns null when the result is not a safe relative path (see isSafeRelPath).
+ * Pure; mutantKey.ts wraps it in a throwing variant (normalizeRelFile).
+ */
+export function normalizeRelPath(p: string): string | null {
+  let out = p.replace(/\\/g, "/");
+  while (out.startsWith("./")) out = out.slice(2);
+  return isSafeRelPath(out) ? out : null;
+}
+
+/**
+ * FILE-PATH CONVENTION (pinned in M2): a trap's `file` and a mutant's `relFile` are SUBJECT-RELATIVE, i.e.
+ * relative to `fixtures/subjects/<id>/` — in practice always `src.ts` (subjects are single, import-free
+ * files). Never repo-relative (`fixtures/subjects/<id>/src.ts`) and never absolute. Because subjects have no
+ * sub-directories, a subject-relative file is a bare file name: a safe relative path with no `/`.
+ */
+export function isSubjectRelFile(p: string): boolean {
+  return isSafeRelPath(p) && !p.includes("/");
+}
+export const SubjectRelFileSchema = z
+  .string()
+  .max(128)
+  .refine(isSubjectRelFile, "expected a subject-relative file name such as src.ts (not a repo-relative path)");
+
+/** The one specifier by which hand suites and candidates import the subject (PLAN §2.2 gate step 2). */
+export const CANONICAL_SUBJECT_SPECIFIER = "./src" as const;
+/** The subject file every trap and generated mutant refers to (subject-relative). */
+export const SUBJECT_SOURCE_FILE = "src.ts" as const;
+
 /** UTF-8 byte length without TextEncoder, so this module stays dependency- and platform-free. */
 export function utf8ByteLength(s: string): number {
   let bytes = 0;
@@ -225,11 +255,22 @@ export const TrapKindSchema = z.enum(TRAP_KINDS);
 export const TrapLabelSchema = z.enum(["killable", "equivalent", "contract-silent"]);
 export const MAX_SCORED_TRAPS_PER_SUBJECT = 3;
 
+/** Trap kinds whose planted mutant may be labelled `equivalent` (it cannot change behaviour). */
+export const EQUIVALENT_CAPABLE_TRAPS = ["equivalent-loop-bound", "dead-flag-branch"] as const;
+
+/**
+ * One planted mutant. `file` is subject-relative (see isSubjectRelFile). `range` uses 1-based lines and
+ * columns (UTF-16 code units) with an EXCLUSIVE end column, as in mutation-testing-report-schema: for a
+ * single-line range, `original === lineText.slice(start.column - 1, end.column - 1)`.
+ * Labels: `equivalent-loop-bound` is always `equivalent`; `dead-flag-branch` may be `equivalent` (a mutation
+ * inside a branch guarded by a constant-false flag) or `killable` (flipping the flag itself); no other trap
+ * may be `equivalent`.
+ */
 export const TrapSchema = z
   .strictObject({
     id: z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/, "expected a lowercase trap id"),
     trap: TrapKindSchema,
-    file: RelPathSchema,
+    file: SubjectRelFileSchema,
     range: SourceRangeSchema,
     /** Exact original text at `range`; patchrun verifies it before replacing. */
     original: z.string().min(1),
@@ -246,8 +287,10 @@ export const TrapSchema = z
       issue("infinite-loop must declare expectedStatus: Timeout", "expectedStatus");
     if (t.trap !== "infinite-loop" && t.expectedStatus !== undefined)
       issue("only infinite-loop declares expectedStatus", "expectedStatus");
-    if ((t.trap === "equivalent-loop-bound") !== (t.label === "equivalent"))
-      issue("label 'equivalent' is used by, and only by, equivalent-loop-bound", "label");
+    if (t.trap === "equivalent-loop-bound" && t.label !== "equivalent")
+      issue("equivalent-loop-bound must be labelled equivalent", "label");
+    if (t.label === "equivalent" && !(EQUIVALENT_CAPABLE_TRAPS as readonly string[]).includes(t.trap))
+      issue("label 'equivalent' is only for equivalent-loop-bound and dead-flag-branch", "label");
     if ((t.trap === "message-only" || t.trap === "exception-type-only") && t.label !== "contract-silent")
       issue(`${t.trap} must be labelled contract-silent`, "label");
     if (t.trap === "canary" && t.label !== "killable") issue("the canary is an obvious killable change", "label");
@@ -349,9 +392,12 @@ export type Subject = z.infer<typeof SubjectSchema>;
 
 const NoPipe = (s: string) => !s.includes("|");
 
-/** Exactly the inputs of the mutant key; there is deliberately no ordinal/engine id field. */
+/**
+ * Exactly the inputs of the mutant key; there is deliberately no ordinal/engine id field.
+ * `relFile` is subject-relative (isSubjectRelFile), the same convention as Trap.file.
+ */
 export const MutantKeyInputSchema = z.strictObject({
-  relFile: RelPathSchema.refine(NoPipe, "relFile may not contain '|'"),
+  relFile: SubjectRelFileSchema.refine(NoPipe, "relFile may not contain '|'"),
   srcSha256: Sha256HexSchema,
   range: SourceRangeSchema,
   mutator: z.string().min(1).max(128).refine(NoPipe, "mutator may not contain '|'"),
@@ -361,7 +407,8 @@ export type MutantKeyInput = z.infer<typeof MutantKeyInputSchema>;
 
 export const MutantRecordSchema = z.strictObject({
   key: Sha256HexSchema,
-  relFile: RelPathSchema,
+  /** Subject-relative (isSubjectRelFile). */
+  relFile: SubjectRelFileSchema,
   srcSha256: Sha256HexSchema,
   range: SourceRangeSchema,
   mutator: z.string().min(1).max(128),

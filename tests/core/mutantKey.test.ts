@@ -46,7 +46,7 @@ describe("mutantKey", () => {
   it("changes when any one of the five inputs changes", () => {
     const k = mutantKey(base);
     const variants: MutantKeyInput[] = [
-      { ...base, relFile: "lib/src.ts" },
+      { ...base, relFile: "other.ts" },
       { ...base, srcSha256: "f".repeat(64) },
       { ...base, range: { start: { line: 12, column: 9 }, end: { line: 12, column: 16 } } },
       { ...base, range: { start: { line: 13, column: 9 }, end: { line: 13, column: 15 } } },
@@ -69,6 +69,9 @@ describe("mutantKey", () => {
     expect(() => mutantKey({ ...base, relFile: "lib\\src.ts" })).toThrow(MutantKeyError);
     expect(() => mutantKey({ ...base, relFile: "./src.ts" })).toThrow(MutantKeyError);
     expect(() => mutantKey({ ...base, relFile: "/abs/src.ts" })).toThrow(MutantKeyError);
+    // Subject-relative convention (M2): repo-relative or nested paths are refused, not silently keyed.
+    expect(() => mutantKey({ ...base, relFile: "fixtures/subjects/clamp-range/src.ts" })).toThrow(MutantKeyError);
+    expect(() => mutantKey({ ...base, relFile: "lib/src.ts" })).toThrow(MutantKeyError);
     expect(() => mutantKey({ ...base, srcSha256: SRC_SHA.toUpperCase() })).toThrow(MutantKeyError);
     expect(() => mutantKey({ ...base, range: { start: { line: 0, column: 1 }, end: { line: 1, column: 1 } } })).toThrow(
       MutantKeyError,
@@ -80,10 +83,12 @@ describe("mutantKey", () => {
 });
 
 describe("normalizeRelFile", () => {
-  it("normalises engine paths to repo-relative POSIX form", () => {
+  it("normalises engine paths to relative POSIX form (separators and leading ./ only)", () => {
     expect(normalizeRelFile("src.ts")).toBe("src.ts");
-    expect(normalizeRelFile(".\\fixtures\\subjects\\clamp-range\\src.ts")).toBe("fixtures/subjects/clamp-range/src.ts");
     expect(normalizeRelFile("./src.ts")).toBe("src.ts");
+    expect(normalizeRelFile(".\\src.ts")).toBe("src.ts");
+    // Normalisation does not strip directories; mutantKey then refuses the non-subject-relative result.
+    expect(normalizeRelFile(".\\fixtures\\subjects\\clamp-range\\src.ts")).toBe("fixtures/subjects/clamp-range/src.ts");
   });
 
   it("refuses traversal and absolute paths", () => {

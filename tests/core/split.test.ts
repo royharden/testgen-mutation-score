@@ -121,12 +121,48 @@ describe("trap reservation", () => {
 
   it("ignores canaries and traps in other files", () => {
     const m = mutant(3, 1);
+    // other.ts has an inventoried mutant (so the trap's file is matched) far from the trap's range.
+    const elsewhere = mutant(50, 1, { relFile: "other.ts" });
     const traps: TrapLocation[] = [
       { id: "c", trap: "canary", file: "src.ts", range: range(3, 1, 3, 4) },
       { id: "x", trap: "float-rounding", file: "other.ts", range: range(3, 1, 3, 4) },
     ];
-    const result = ok(splitMutants([m, ...manyLines(40)], traps, { seed: 3, feedbackFraction: 0.5 }));
+    const result = ok(splitMutants([m, elsewhere, ...manyLines(40)], traps, { seed: 3, feedbackFraction: 0.5 }));
     expect(result.reservedGroups).toEqual([]);
+  });
+
+  it("normalises engine paths on both sides before matching (subject-relative convention)", () => {
+    const fromEngine = mutant(7, 5, { relFile: ".\\src.ts" });
+    const traps: TrapLocation[] = [{ id: "b1", trap: "boundary-off-by-one", file: "./src.ts", range: range(7, 6, 7, 8) }];
+    const result = ok(splitMutants([fromEngine, ...linesFrom(100, 60)], traps, { seed: 4 }));
+    expect(result.reservedGroups).toEqual(["src.ts#line@7"]);
+    expect(result.groupOf[fromEngine.key]).toBe("src.ts#line@7");
+  });
+
+  it("refuses when a scored trap's file matches no inventoried mutant file (e.g. a repo-relative trap path)", () => {
+    const traps: TrapLocation[] = [
+      { id: "b1", trap: "boundary-off-by-one", file: "fixtures/subjects/clamp-range/src.ts", range: range(7, 6, 7, 8) },
+    ];
+    expect(splitMutants(manyLines(40), traps, { seed: 4 })).toMatchObject({
+      ok: false,
+      kind: "split-refusal",
+      reason: "trap-file-unmatched",
+      offenders: ["b1"],
+    });
+  });
+
+  it("does not refuse for an unmatched canary (canaries never take part in the split)", () => {
+    const traps: TrapLocation[] = [{ id: "c", trap: "canary", file: "elsewhere.ts", range: range(1, 1, 1, 2) }];
+    expect(splitMutants(manyLines(40), traps, { seed: 4 }).ok).toBe(true);
+  });
+
+  it("refuses traversal or absolute paths on either side", () => {
+    expect(splitMutants([mutant(1, 1, { relFile: "../src.ts" }), ...manyLines(40)], [], { seed: 4 })).toMatchObject({
+      ok: false,
+      reason: "invalid-path",
+    });
+    const traps: TrapLocation[] = [{ id: "t", trap: "quirk-trap", file: "C:\\repo\\src.ts", range: range(1, 1, 1, 2) }];
+    expect(splitMutants(manyLines(40), traps, { seed: 4 })).toMatchObject({ ok: false, reason: "invalid-path" });
   });
 
   it("treats touching ranges as overlapping (safe direction)", () => {

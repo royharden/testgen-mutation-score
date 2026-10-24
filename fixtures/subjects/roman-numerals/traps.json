@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "roman-numerals",
+  "traps": [
+    {
+      "id": "infinite-symbol-scan",
+      "trap": "infinite-loop",
+      "file": "src.ts",
+      "range": { "start": { "line": 39, "column": 7 }, "end": { "line": 39, "column": 27 } },
+      "original": "pos += symbol.length",
+      "replacement": "pos += 0",
+      "label": "killable",
+      "expectedStatus": "Timeout",
+      "note": "The scan never advances once a symbol matches, and its body only adds numbers, so fromRoman('XIV') in the hand suite spins forever without allocating. Must end as Timeout."
+    },
+    {
+      "id": "eqloop-values-length",
+      "trap": "equivalent-loop-bound",
+      "file": "src.ts",
+      "range": { "start": { "line": 35, "column": 8 }, "end": { "line": 35, "column": 36 } },
+      "original": "let i = 0; i < VALUES.length",
+      "replacement": "let i = 0; i !== VALUES.length",
+      "label": "equivalent",
+      "note": "i starts at 0, grows by 1 and VALUES.length is the constant 13, so < and !== stop at the same step."
+    },
+    {
+      "id": "message-range",
+      "trap": "message-only",
+      "file": "src.ts",
+      "range": { "start": { "line": 20, "column": 26 }, "end": { "line": 20, "column": 72 } },
+      "original": "`expected an integer from 1 to 3999, got ${n}`",
+      "replacement": "\"bad numeral range\"",
+      "label": "contract-silent",
+      "note": "Only the RangeError message changes; the CONTRACT specifies the class, not the text."
+    },
+    {
+      "id": "canary-isroman-false",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": { "start": { "line": 54, "column": 3 }, "end": { "line": 54, "column": 15 } },
+      "original": "return true;",
+      "replacement": "return false;",
+      "label": "killable",
+      "note": "Disposable canary: isRoman is never true; the hand suite asserts isRoman('XLII')."
+    }
+  ]
+}

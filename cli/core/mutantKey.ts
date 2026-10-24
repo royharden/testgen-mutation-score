@@ -9,7 +9,7 @@
  * CLI-ONLY: uses node:crypto, so it must never be imported by cli/core/schemas.ts or the viewer (D1).
  */
 import { createHash } from "node:crypto";
-import { isSafeRelPath } from "./schemas.js";
+import { isSubjectRelFile, normalizeRelPath } from "./schemas.js";
 import type { MutantKeyInput, SourceRange } from "./schemas.js";
 
 export type { MutantKeyInput };
@@ -25,13 +25,14 @@ export function formatRange(range: SourceRange): string {
 }
 
 /**
- * Normalise an engine-reported file path to the repo-relative POSIX form keys require
- * (backslashes → `/`, leading `./` removed). Throws if the result is not a safe relative path.
+ * Normalise an engine-reported file path to relative POSIX form (backslashes → `/`, leading `./` removed).
+ * Throws if the result is not a safe relative path. Keys additionally require the result to be
+ * SUBJECT-RELATIVE (`src.ts`, see isSubjectRelFile in schemas.ts); engines run with the subject directory
+ * as their root, so their paths normalise to that form.
  */
 export function normalizeRelFile(file: string): string {
-  let p = file.replace(/\\/g, "/");
-  while (p.startsWith("./")) p = p.slice(2);
-  if (!isSafeRelPath(p)) throw new MutantKeyError(`not a safe repo-relative path: ${JSON.stringify(file)}`);
+  const p = normalizeRelPath(file);
+  if (p === null) throw new MutantKeyError(`not a safe relative path: ${JSON.stringify(file)}`);
   return p;
 }
 
@@ -52,6 +53,8 @@ function isPositiveInt(n: number): boolean {
 export function mutantKeyPreimage(input: MutantKeyInput): string {
   const { relFile, srcSha256, range, mutator, replacement } = input;
   if (relFile !== normalizeRelFile(relFile)) throw new MutantKeyError(`relFile must be normalised: ${JSON.stringify(relFile)}`);
+  if (!isSubjectRelFile(relFile))
+    throw new MutantKeyError(`relFile must be subject-relative (e.g. src.ts): ${JSON.stringify(relFile)}`);
   if (relFile.includes("|")) throw new MutantKeyError("relFile may not contain '|'");
   if (!/^[0-9a-f]{64}$/.test(srcSha256)) throw new MutantKeyError("srcSha256 must be lowercase hex sha256");
   if (mutator.length === 0 || mutator.includes("|")) throw new MutantKeyError("mutator must be non-empty and contain no '|'");
