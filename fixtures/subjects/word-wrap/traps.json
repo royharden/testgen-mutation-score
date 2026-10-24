@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "word-wrap",
+  "traps": [
+    {
+      "id": "infinite-skip-space",
+      "trap": "infinite-loop",
+      "file": "src.ts",
+      "range": { "start": { "line": 28, "column": 60 }, "end": { "line": 28, "column": 66 } },
+      "original": "i += 1",
+      "replacement": "i += 0",
+      "label": "killable",
+      "expectedStatus": "Timeout",
+      "note": "The whitespace-skipping loop never advances, so any text containing whitespace spins forever without allocating; the first hand test ('the quick brown fox') hangs. Must end as Timeout."
+    },
+    {
+      "id": "boundary-exact-fit",
+      "trap": "boundary-off-by-one",
+      "file": "src.ts",
+      "range": { "start": { "line": 55, "column": 18 }, "end": { "line": 55, "column": 60 } },
+      "original": "current.length + 1 + piece.length <= width",
+      "replacement": "current.length + 1 + piece.length < width",
+      "label": "killable",
+      "note": "A line that would fill the width exactly is broken early; the hand suite kills it with wrapText('ab cd ef', 5)."
+    },
+    {
+      "id": "canary-linecount-zero",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": { "start": { "line": 68, "column": 3 }, "end": { "line": 68, "column": 39 } },
+      "original": "return wrapText(text, width).length;",
+      "replacement": "return 0;",
+      "label": "killable",
+      "note": "Disposable canary: lineCount is always 0; the hand suite asserts 2."
+    }
+  ]
+}

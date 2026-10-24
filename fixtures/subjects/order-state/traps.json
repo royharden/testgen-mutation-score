@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "order-state",
+  "traps": [
+    {
+      "id": "deadflag-reopen",
+      "trap": "dead-flag-branch",
+      "file": "src.ts",
+      "range": { "start": { "line": 35, "column": 9 }, "end": { "line": 35, "column": 51 } },
+      "original": "state === \"cancelled\" && event === \"place\"",
+      "replacement": "state === \"cancelled\"",
+      "label": "equivalent",
+      "note": "Inside if (ALLOW_REOPEN) where the flag is the constant false, so the branch never runs."
+    },
+    {
+      "id": "quirk-event-order",
+      "trap": "quirk-trap",
+      "file": "src.ts",
+      "range": { "start": { "line": 67, "column": 10 }, "end": { "line": 67, "column": 35 } },
+      "original": "Object.keys(TABLE[state])",
+      "replacement": "Object.keys(TABLE[state]).sort()",
+      "label": "contract-silent",
+      "note": "allowedEvents('placed') is ['pay', 'cancel'] in src.ts but ['cancel', 'pay'] with the mutant and in twin.ts; the CONTRACT does not specify the order."
+    },
+    {
+      "id": "message-transition",
+      "trap": "message-only",
+      "file": "src.ts",
+      "range": { "start": { "line": 39, "column": 21 }, "end": { "line": 39, "column": 64 } },
+      "original": "`cannot ${event} an order that is ${state}`",
+      "replacement": "\"invalid transition\"",
+      "label": "contract-silent",
+      "note": "Only the Error message changes; the CONTRACT leaves message text unspecified."
+    },
+    {
+      "id": "canary-terminal-false",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": { "start": { "line": 63, "column": 3 }, "end": { "line": 63, "column": 57 } },
+      "original": "return state === \"delivered\" || state === \"cancelled\";",
+      "replacement": "return false;",
+      "label": "killable",
+      "note": "Disposable canary: no state is terminal; the hand suite asserts isTerminal('delivered')."
+    }
+  ]
+}

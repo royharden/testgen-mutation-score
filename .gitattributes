@@ -1,0 +1,2 @@
+# Fixture bytes, trap ranges and sha256 hashes must not change with Windows autocrlf.
+* text=auto eol=lf

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "semver-compare",
+  "traps": [
+    {
+      "id": "exctype-parse",
+      "trap": "exception-type-only",
+      "file": "src.ts",
+      "range": { "start": { "line": 38, "column": 5 }, "end": { "line": 38, "column": 25 } },
+      "original": "throw new TypeError(",
+      "replacement": "throw new Error(",
+      "label": "contract-silent",
+      "note": "Only the parse error's class changes; the CONTRACT leaves it unspecified."
+    },
+    {
+      "id": "stability-merge-ties",
+      "trap": "sort-stability",
+      "file": "src.ts",
+      "range": { "start": { "line": 77, "column": 9 }, "end": { "line": 77, "column": 50 } },
+      "original": "compareVersions(left[i]!, right[j]!) <= 0",
+      "replacement": "compareVersions(left[i]!, right[j]!) < 0",
+      "label": "killable",
+      "note": "The merge takes the right run first on ties; witness sortVersions(['1.0.0+a', '1.0.0+b']) becomes ['1.0.0+b', '1.0.0+a']. The hand suite sorts no ties."
+    },
+    {
+      "id": "canary-max-undefined",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": { "start": { "line": 94, "column": 3 }, "end": { "line": 94, "column": 15 } },
+      "original": "return best;",
+      "replacement": "return undefined;",
+      "label": "killable",
+      "note": "Disposable canary: maxVersion is always undefined; the hand suite asserts '1.10.0'."
+    }
+  ]
+}

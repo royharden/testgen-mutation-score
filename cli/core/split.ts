@@ -9,7 +9,7 @@
  * 2. Subject split (future editions only, D10): edition 1 uses a designed, stratified assignment recorded
  *    in gold/manifest.json; these seeded functions exist so a later edition can switch to `seeded-hash`.
  */
-import { compareSourcePositions } from "./schemas.js";
+import { compareSourcePositions, normalizeRelPath } from "./schemas.js";
 import type { Partition, SourcePosition, SourceRange, TrapKind } from "./schemas.js";
 import { seededHash32, seededUnit, toSeed } from "./prng.js";
 
@@ -17,7 +17,11 @@ import { seededHash32, seededUnit, toSeed } from "./prng.js";
 // Types
 // ---------------------------------------------------------------------------------------------------------
 
-/** One generated mutant as seen by the split (a subset of MutantRecord plus the AST statement range). */
+/**
+ * One generated mutant as seen by the split (a subset of MutantRecord plus the AST statement range).
+ * `relFile` and TrapLocation.file follow the SUBJECT-RELATIVE convention (schemas.ts isSubjectRelFile);
+ * both are passed through normalizeRelPath before they are compared or used in a group key.
+ */
 export interface SplitMutantInput {
   key: string;
   relFile: string;
@@ -83,7 +87,12 @@ export interface MutantSplit {
   sizes: SplitSizes;
 }
 
-export type MutantSplitRefusalReason = "empty-inventory" | "empty-feedback" | "empty-scoring";
+export type MutantSplitRefusalReason =
+  | "empty-inventory"
+  | "invalid-path"
+  | "trap-file-unmatched"
+  | "empty-feedback"
+  | "empty-scoring";
 
 export interface SplitRefusal {
   ok: false;
@@ -91,6 +100,8 @@ export interface SplitRefusal {
   reason: MutantSplitRefusalReason;
   message: string;
   sizes: SplitSizes;
+  /** invalid-path: the offending paths; trap-file-unmatched: the ids of the traps whose file matched nothing. */
+  offenders?: string[];
 }
 
 export type MutantSplitResult = MutantSplit | SplitRefusal;
@@ -192,7 +203,29 @@ export function splitMutants(
   if (!(feedbackFraction >= 0 && feedbackFraction <= 1))
     throw new RangeError(`feedbackFraction must be in [0, 1], got ${feedbackFraction}`);
 
-  const { kept, duplicates } = dedupePatches(mutants);
+  // Normalise both sides of every file comparison (subject-relative convention, schemas.ts). Canaries are
+  // disposable and never part of a partition, so they reserve nothing and are not checked here.
+  const invalidPaths: string[] = [];
+  const normalised: SplitMutantInput[] = mutants.map((m) => {
+    const relFile = normalizeRelPath(m.relFile);
+    if (relFile === null) {
+      invalidPaths.push(m.relFile);
+      return m;
+    }
+    return relFile === m.relFile ? m : { ...m, relFile };
+  });
+  const scoredTraps: TrapLocation[] = [];
+  for (const t of traps) {
+    if (t.trap === "canary") continue;
+    const file = normalizeRelPath(t.file);
+    if (file === null) {
+      invalidPaths.push(t.file);
+      continue;
+    }
+    scoredTraps.push(file === t.file ? t : { ...t, file });
+  }
+
+  const { kept, duplicates } = dedupePatches(normalised);
 
   // Build location groups.
   const groupsByKey = new Map<string, { relFile: string; extent: SourceRange; mutantKeys: string[] }>();
@@ -208,9 +241,6 @@ export function splitMutants(
       existing.mutantKeys.push(m.key);
     }
   }
-
-  // Canaries are disposable and never part of a partition, so they reserve nothing.
-  const scoredTraps = traps.filter((t) => t.trap !== "canary");
 
   const groups: LocationGroup[] = [...groupsByKey.entries()]
     .sort(([a], [b]) => byString(a, b))
@@ -237,14 +267,23 @@ export function splitMutants(
     scoring: scoring.length,
   };
 
-  const refuse = (reason: MutantSplitRefusalReason, message: string): SplitRefusal => ({
+  const refuse = (reason: MutantSplitRefusalReason, message: string, offenders?: string[]): SplitRefusal => ({
     ok: false,
     kind: "split-refusal",
     reason,
     message,
     sizes,
+    ...(offenders === undefined ? {} : { offenders }),
   });
   if (kept.length === 0) return refuse("empty-inventory", "no generated mutants to split");
+  if (invalidPaths.length > 0)
+    return refuse("invalid-path", "a mutant relFile or trap file is not a safe relative path", [...invalidPaths].sort(byString));
+  // A scored trap whose file matches no inventoried file would silently reserve nothing (e.g. a repo-relative
+  // trap path against subject-relative mutants), letting its neighbours into the feedback set.
+  const inventoryFiles = new Set(normalised.map((m) => m.relFile));
+  const unmatched = scoredTraps.filter((t) => !inventoryFiles.has(t.file)).map((t) => t.id).sort(byString);
+  if (unmatched.length > 0)
+    return refuse("trap-file-unmatched", "a scored trap's file matches no mutant relFile in the inventory", unmatched);
   if (feedback.length === 0) return refuse("empty-feedback", "feedback partition is empty; the gate would have no signal");
   if (scoring.length === 0) return refuse("empty-scoring", "scoring partition is empty; nothing could be scored");
 

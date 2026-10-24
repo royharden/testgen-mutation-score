@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "money-format",
+  "traps": [
+    {
+      "id": "float-basis-points",
+      "trap": "float-rounding",
+      "file": "src.ts",
+      "range": { "start": { "line": 70, "column": 3 }, "end": { "line": 70, "column": 53 } },
+      "original": "const basisPoints = Math.round(ratePercent * 100);",
+      "replacement": "const basisPoints = ratePercent * 100;",
+      "label": "killable",
+      "note": "The rate is no longer snapped to whole basis points; 0.29 * 100 is 28.999999999999996, so witness applyRate(5000, 0.29) is 15 in src.ts and 14 with the mutant. The hand suite uses exactly representable rates."
+    },
+    {
+      "id": "message-safe-integer",
+      "trap": "message-only",
+      "file": "src.ts",
+      "range": { "start": { "line": 30, "column": 25 }, "end": { "line": 30, "column": 69 } },
+      "original": "`cents must be a safe integer, got ${cents}`",
+      "replacement": "`invalid amount: ${cents}`",
+      "label": "contract-silent",
+      "note": "Only the TypeError message changes; the CONTRACT specifies the class, not the text."
+    },
+    {
+      "id": "deadflag-legacy-truncation",
+      "trap": "dead-flag-branch",
+      "file": "src.ts",
+      "range": { "start": { "line": 72, "column": 12 }, "end": { "line": 72, "column": 53 } },
+      "original": "Math.trunc((cents * basisPoints) / 10000)",
+      "replacement": "Math.ceil((cents * basisPoints) / 10000)",
+      "label": "equivalent",
+      "note": "Inside if (USE_LEGACY_TRUNCATION) where the flag is the constant false, so the branch never runs."
+    },
+    {
+      "id": "canary-no-grouping",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": { "start": { "line": 41, "column": 3 }, "end": { "line": 41, "column": 14 } },
+      "original": "return out;",
+      "replacement": "return digits;",
+      "label": "killable",
+      "note": "Disposable canary: thousands separators disappear; the hand suite asserts formatMoney(123456) === '$1,234.56'."
+    }
+  ]
+}
