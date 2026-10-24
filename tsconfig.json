@@ -1,0 +1,26 @@
+{
+  // Viewer (browser) project. Bundler resolution, DOM libs, no Node types.
+  // D1: the only file under cli/ this project may see is cli/core/schemas.ts (pure, imports only zod).
+  // The CLI, scripts and tests are checked by tsconfig.cli.json instead.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": false,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": []
+  },
+  // src/ is created in M7; until then cli/core/schemas.ts is this project's only input.
+  // Build config files run in Node and are checked by tsconfig.cli.json.
+  "include": ["src", "cli/core/schemas.ts"]
+}
