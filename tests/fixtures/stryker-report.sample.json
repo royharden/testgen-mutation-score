@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/mutation-testing-elements/master/packages/report-schema/src/mutation-test-result-schema.json",
+  "schemaVersion": "1.0",
+  "thresholds": { "high": 80, "low": 60 },
+  "files": {
+    "src.ts": {
+      "language": "typescript",
+      "source": "export function add(value: number): number {\n  return value + 1;\n}\n",
+      "mutants": [
+        {
+          "id": "sample-1",
+          "description": "SAMPLE ONLY: hand-authored public-report fixture; never executed or measured.",
+          "mutatorName": "ArithmeticOperator",
+          "replacement": "-",
+          "location": { "start": { "line": 2, "column": 16 }, "end": { "line": 2, "column": 17 } },
+          "status": "Killed",
+          "coveredBy": ["sample-test"],
+          "killedBy": ["sample-test"]
+        },
+        {
+          "id": "sample-2",
+          "description": "SAMPLE ONLY: compile-error accounting fixture.",
+          "mutatorName": "NumericLiteral",
+          "replacement": "unknownValue",
+          "location": { "start": { "line": 2, "column": 18 }, "end": { "line": 2, "column": 19 } },
+          "status": "CompileError"
+        }
+      ]
+    }
+  }
+}

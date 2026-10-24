@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "clamp-range",
+  "arm": "A5",
+  "round": 1,
+  "slot": 1,
+  "promptSha256": "pending",
+  "kind": "accept",
+  "probabilistic": false,
+  "response": {
+    "testFile": "import { test, expect } from \"vitest\";\nimport { clamp } from \"./src\";\ntest(\"clamps above the upper bound\", () => {\n  expect(clamp(9, 0, 5)).toBe(5);\n});"
+  },
+  "expected": [
+    {
+      "testName": "clamps above the upper bound",
+      "decision": "accepted",
+      "code": null,
+      "subReason": null
+    }
+  ],
+  "expectTwinFailure": false,
+  "note": "Canonical M4 vertical-slice candidate; expected acceptance is designed, not measured. Runtime needs a frozen feedback inventory containing a distinguishable upper-bound mutant. M5 indexes this file without copying it."
+}
