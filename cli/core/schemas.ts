@@ -518,6 +518,20 @@ const executionBase = {
   outputTruncated: z.boolean(),
 };
 
+/** JSON strings keep captured prototype keys and text out of executable source. */
+export const A1ProbeSchema = z.strictObject({
+  id: z.string().regex(/^[a-z][a-zA-Z0-9_-]{0,79}$/),
+  exportName: z.string().regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/),
+  argsJson: z.string().max(16384),
+});
+export const A1ObservationSchema = z.strictObject({
+  probeId: z.string().min(1), outcome: z.enum(["return", "throw", "unsupported"]),
+  valueJson: z.string().max(16384).nullable(), errorName: z.string().max(200).nullable(),
+  message: z.string().max(1000).nullable(),
+});
+export type A1Probe = z.infer<typeof A1ProbeSchema>;
+export type A1Observation = z.infer<typeof A1ObservationSchema>;
+
 const mutantOutcome = {
   mutantKey: Sha256HexSchema,
   mutantStatus: MutantStatusSchema,
@@ -540,7 +554,7 @@ export const LoopExecutionResultSchema = z
     z.strictObject({ kind: z.literal("pristine-union"), ...executionBase }),
     z.strictObject({ kind: z.literal("feedback-mutant"), ...executionBase, ...mutantOutcome }),
     z.strictObject({ kind: z.literal("coverage"), coveredLines: z.array(z.number().int().min(1)), ...executionBase }),
-    z.strictObject({ kind: z.literal("a1-capture"), ...executionBase }),
+    z.strictObject({ kind: z.literal("a1-capture"), observations: z.array(A1ObservationSchema).max(64), ...executionBase }),
   ])
   .refine(killCauseConsistent, { message: KILL_CAUSE_MESSAGE, path: ["killCause"] });
 export type LoopExecutionResult = z.infer<typeof LoopExecutionResultSchema>;
@@ -696,6 +710,9 @@ export const RunRecordSchema = z
     if (r.split === "heldout" && r.campaignId === null && r.status !== "refused") issue("held-out runs belong to a campaign", "campaignId");
   });
 export type RunRecord = z.infer<typeof RunRecordSchema>;
+
+/** Public run catalog. Entries derive their URL from the safe run id, never a caller path. */
+export const RunIndexSchema = z.strictObject({ schemaVersion, runs: z.array(RunIdSchema) });
 
 /** Scorer-owned record, written only after the subject × arm × repeat suite is immutable. The loop never reads it. */
 export const ScoringRecordSchema = z.strictObject({

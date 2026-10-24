@@ -1,0 +1,23 @@
+{
+  "response": {
+    "testFile": "import { test, expect } from \"vitest\";\nimport { clamp, clampAll, rangeFraction } from \"./src\";\ntest(\"clamp-range A6 round 2 contract\", () => {\n  expect(clamp(9, 0, 5)).toBe(9);\n});"
+  },
+  "kind": "fails-pristine",
+  "probabilistic": false,
+  "promptSha256": "pending",
+  "arm": "A6",
+  "slot": 1,
+  "subjectId": "clamp-range",
+  "expected": [
+    {
+      "decision": "rejected",
+      "subReason": null,
+      "code": "fails-pristine",
+      "testName": "clamp-range A6 round 2 contract"
+    }
+  ],
+  "expectTwinFailure": false,
+  "schemaVersion": 1,
+  "round": 2,
+  "note": "Designed fixture, not measured. Outcomes depend on the frozen feedback inventory; replay:check binds the actual controller prompt and never invents execution evidence."
+}

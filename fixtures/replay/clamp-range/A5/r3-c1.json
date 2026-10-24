@@ -1,0 +1,23 @@
+{
+  "response": {
+    "testFile": "import { test, expect } from \"vitest\";\nimport { clamp, clampAll, rangeFraction } from \"./src\";\ntest(\"clamp-range A5 round 3 contract\", () => {\n  expect(clamp(NaN, 0, 5)).toBe(0); expect(clampAll([-2, 3, 9], 0, 5)).toEqual([0, 3, 5]);\n});"
+  },
+  "kind": "quirk-pin",
+  "probabilistic": false,
+  "promptSha256": "pending",
+  "arm": "A5",
+  "slot": 1,
+  "subjectId": "clamp-range",
+  "expected": [
+    {
+      "decision": "accepted",
+      "subReason": null,
+      "code": null,
+      "testName": "clamp-range A5 round 3 contract"
+    }
+  ],
+  "expectTwinFailure": true,
+  "schemaVersion": 1,
+  "round": 3,
+  "note": "Quirk statement is scoring-reserved, so NaN assertion alone cannot admit this unit. Independent clampAll assertion is intended to earn a new feedback kill. Activation requires actual admission plus attributed post-freeze twin failure."
+}

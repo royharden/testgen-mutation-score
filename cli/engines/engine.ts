@@ -1,6 +1,7 @@
 /** Engine contracts. Generation receives only FeedbackExecutor; scoring requires an explicit frozen suite. */
 import { z } from "zod";
-import { LoopExecutionResultSchema, MutantInventorySchema, ScoringExecutionResultSchema, TestUnitSchema } from "../core/schemas.js";
+import { A1ProbeSchema, LoopExecutionResultSchema, MutantInventorySchema, ScoringExecutionResultSchema, TestUnitSchema } from "../core/schemas.js";
+import type { A1Probe } from "../core/schemas.js";
 import type { ExecutionResult, LoopExecutionResult, MutantInventory, MutantRecord, RunErrorKind, ScoringExecutionResult, SourcePosition, SourceRange, TestUnit } from "../core/schemas.js";
 import { mutantKey, normalizeRelFile, sha256Hex } from "../core/mutantKey.js";
 import { enclosingStatementRange } from "../core/ast.js";
@@ -39,6 +40,7 @@ export type IsolatedTarget =
   | { kind: "pristine"; attempt: 1 | 2 }
   | { kind: "pristine-union" }
   | { kind: "coverage" }
+  | { kind: "a1-capture" }
   | { kind: "feedback-mutant"; mutantKey: string }
   | { kind: "scoring-mutant"; mutantKey: string }
   | { kind: "planted"; trapId: string }
@@ -49,6 +51,8 @@ export interface IsolatedRunRequest {
   units: readonly TestUnit[];
   target: IsolatedTarget;
   shuffleSeed?: number;
+  /** Trusted AST-selected JSON argument probes, never model input. */
+  probes?: readonly A1Probe[];
 }
 
 export interface IsolatedRunner {
@@ -156,6 +160,12 @@ export function validateRunResult(result: unknown, request: IsolatedRunRequest):
   const parsed = schema.safeParse(result);
   if (!parsed.success) throw new EngineExecutionError("report-parse", "runner returned malformed execution data");
   const value = parsed.data;
+  if (request.target.kind === "a1-capture") {
+    const probes = (request.probes ?? []).map((probe) => A1ProbeSchema.parse(probe));
+    if (request.units.length !== 0 || probes.length > 64 || new Set(probes.map((p) => p.id)).size !== probes.length ||
+        value.kind !== "a1-capture" || !equalSet(value.observations.map((o) => o.probeId), probes.map((p) => p.id)))
+      throw new EngineExecutionError("report-parse", "A1 capture attribution is incomplete or duplicated");
+  } else if (request.probes !== undefined) throw new EngineExecutionError("report-parse", "probes are only allowed in A1 capture");
   const hashes = request.units.map((u) => u.unitSha256);
   if (value.kind !== request.target.kind || !equalSet(value.unitSha256s, hashes))
     throw new EngineExecutionError("report-parse", "runner returned a mismatched target or suite");

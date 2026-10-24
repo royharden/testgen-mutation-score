@@ -1,0 +1,23 @@
+{
+  "response": {
+    "testFile": "import { test, expect, vi } from \"vitest\";\nimport { clamp, clampAll, rangeFraction } from \"./src\";\ntest(\"clamp-range A4 round 3 contract\", () => {\n  vi.mock(\"./src\"); expect(clamp(3, 0, 5)).toBe(3);\n});"
+  },
+  "kind": "forbidden-import-vi-mock",
+  "probabilistic": false,
+  "promptSha256": "pending",
+  "arm": "A4",
+  "slot": 1,
+  "subjectId": "clamp-range",
+  "expected": [
+    {
+      "decision": "rejected",
+      "subReason": "vi-mock",
+      "code": "forbidden-import",
+      "testName": "clamp-range A4 round 3 contract"
+    }
+  ],
+  "expectTwinFailure": false,
+  "schemaVersion": 1,
+  "round": 3,
+  "note": "Designed fixture, not measured. Outcomes depend on the frozen feedback inventory; replay:check binds the actual controller prompt and never invents execution evidence."
+}

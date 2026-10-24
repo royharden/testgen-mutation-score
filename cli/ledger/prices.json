@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-10-24",
+  "note": "Construction placeholder. Pin one exact model and verify published prices at activation. Null prices block every live call.",
+  "models": [
+    { "provider": "anthropic", "model": "UNPINNED", "inputUsdPerMillion": null, "outputUsdPerMillion": null },
+    { "provider": "openai_compatible", "model": "UNPINNED", "inputUsdPerMillion": null, "outputUsdPerMillion": null }
+  ]
+}
