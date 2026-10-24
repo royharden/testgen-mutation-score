@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "date-range-sort",
+  "traps": [
+    {
+      "id": "exctype-range",
+      "trap": "exception-type-only",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 35,
+          "column": 5
+        },
+        "end": {
+          "line": 35,
+          "column": 25
+        }
+      },
+      "original": "throw new TypeError(",
+      "replacement": "throw new Error(",
+      "label": "contract-silent",
+      "note": "Only the parse error class changes. The CONTRACT specifies neither its class nor message; hand tests use toThrow() without a class."
+    },
+    {
+      "id": "stability-merge-ties",
+      "trap": "sort-stability",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 56,
+          "column": 9
+        },
+        "end": {
+          "line": 56,
+          "column": 48
+        }
+      },
+      "original": "compareRanges(left[i]!, right[j]!) <= 0",
+      "replacement": "compareRanges(left[i]!, right[j]!) < 0",
+      "label": "killable",
+      "note": "Right-side equal ranges win the merge. Witness [\"2024-01-01/2024-01-02#a\",\"2024-01-01/2024-01-02#b\"] reverses; labels are ignored for comparison but stable order is specified. Hand sorting has no ties."
+    },
+    {
+      "id": "canary-max-undefined",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 73,
+          "column": 3
+        },
+        "end": {
+          "line": 73,
+          "column": 15
+        }
+      },
+      "original": "return best;",
+      "replacement": "return undefined;",
+      "label": "killable",
+      "note": "Disposable canary: maxRange always returns undefined; the hand suite expects the February range."
+    }
+  ]
+}

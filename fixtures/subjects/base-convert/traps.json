@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "base-convert",
+  "traps": [
+    {
+      "id": "infinite-digit-scan",
+      "trap": "infinite-loop",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 54,
+          "column": 5
+        },
+        "end": {
+          "line": 54,
+          "column": 18
+        }
+      },
+      "original": "position += 1",
+      "replacement": "position += 0",
+      "label": "killable",
+      "expectedStatus": "Timeout",
+      "note": "The digit scan stops advancing at a valid digit. Its body reads character codes and only performs numeric checks/arithmetic; safe-integer validation is after the loop. fromBase(\"-2A\",16) in the hand suite spins without allocation; intended result is Timeout."
+    },
+    {
+      "id": "eqloop-alphabet-prefix",
+      "trap": "equivalent-loop-bound",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 25,
+          "column": 8
+        },
+        "end": {
+          "line": 25,
+          "column": 35
+        }
+      },
+      "original": "let index = 0; index < base",
+      "replacement": "let index = 0; index !== base",
+      "label": "equivalent",
+      "note": "Validated base is an integer 2..36; index starts at zero and increments by one, so both bounds stop at base."
+    },
+    {
+      "id": "message-base",
+      "trap": "message-only",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 18,
+          "column": 26
+        },
+        "end": {
+          "line": 18,
+          "column": 60
+        }
+      },
+      "original": "`unsupported numeral base ${base}`",
+      "replacement": "\"base is outside 2..36\"",
+      "label": "contract-silent",
+      "note": "Only the invalid-base RangeError message changes; its text is unspecified and not asserted by the hand suite."
+    },
+    {
+      "id": "canary-recognizer-false",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 70,
+          "column": 3
+        },
+        "end": {
+          "line": 70,
+          "column": 15
+        }
+      },
+      "original": "return true;",
+      "replacement": "return false;",
+      "label": "killable",
+      "note": "Disposable canary: isBaseNumber never returns true; the hand suite expects true for FF in base 16."
+    }
+  ]
+}
