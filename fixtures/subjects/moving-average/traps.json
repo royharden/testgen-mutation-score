@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "moving-average",
+  "traps": [
+    {
+      "id": "float-round-half-down",
+      "trap": "float-rounding",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 51,
+          "column": 10
+        },
+        "end": {
+          "line": 51,
+          "column": 37
+        }
+      },
+      "original": "Math.round(average * scale)",
+      "replacement": "Math.floor(average * scale)",
+      "label": "killable",
+      "note": "Exact binary half witness: roundedMean([1.25], 1) is 1.3 in src.ts and 1.2 with the mutant. Hand rounded means are already integers, so the trap survives."
+    },
+    {
+      "id": "eqloop-sample-count",
+      "trap": "equivalent-loop-bound",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 25,
+          "column": 8
+        },
+        "end": {
+          "line": 25,
+          "column": 36
+        }
+      },
+      "original": "let i = 0; i < values.length",
+      "replacement": "let i = 0; i !== values.length",
+      "label": "equivalent",
+      "note": "i starts at zero and increments by one to a fixed array length; neither the array nor its length is modified."
+    },
+    {
+      "id": "canary-no-windows",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 40,
+          "column": 3
+        },
+        "end": {
+          "line": 40,
+          "column": 19
+        }
+      },
+      "original": "return averages;",
+      "replacement": "return [];",
+      "label": "killable",
+      "note": "Disposable canary: movingAverage returns no complete-window means; the hand suite expects [3,5,7]."
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "lru-cache",
+  "traps": [
+    {
+      "id": "boundary-recency-size",
+      "trap": "boundary-off-by-one",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 66,
+          "column": 50
+        },
+        "end": {
+          "line": 66,
+          "column": 78
+        }
+      },
+      "original": "index >= this.entries.length",
+      "replacement": "index > this.entries.length",
+      "label": "killable",
+      "note": "With two entries, keyAt(2) throws on src but returns undefined on mutant. Hand tests omit the index equal to size."
+    },
+    {
+      "id": "deadflag-cache-overflow",
+      "trap": "dead-flag-branch",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 37,
+          "column": 7
+        },
+        "end": {
+          "line": 37,
+          "column": 82
+        }
+      },
+      "original": "if (this.entries.length > this.capacity) throw new Error(\"cache overflow\");",
+      "replacement": "if (this.entries.length >= this.capacity) throw new Error(\"cache overflow\");",
+      "label": "equivalent",
+      "note": "The check sits inside if (DEBUG_CACHE), whose module flag is the constant false."
+    },
+    {
+      "id": "exctype-cache-capacity",
+      "trap": "exception-type-only",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 22,
+          "column": 54
+        },
+        "end": {
+          "line": 22,
+          "column": 99
+        }
+      },
+      "original": "throw new TypeError(\"invalid cache capacity\")",
+      "replacement": "throw new RangeError(\"invalid cache capacity\")",
+      "label": "contract-silent",
+      "note": "Only the constructor error class changes; the CONTRACT specifies no class."
+    },
+    {
+      "id": "canary-cache-size",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 27,
+          "column": 5
+        },
+        "end": {
+          "line": 27,
+          "column": 32
+        }
+      },
+      "original": "return this.entries.length;",
+      "replacement": "return 0;",
+      "label": "killable",
+      "note": "The first hand test asserts size is 2, killing the always-zero canary."
+    }
+  ]
+}

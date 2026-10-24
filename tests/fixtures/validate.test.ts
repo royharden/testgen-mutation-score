@@ -1,14 +1,13 @@
-// M2 acceptance (and M3 once the held-out subjects exist): static validation of every subject folder present
+// M3 acceptance: static validation of every subject folder present
 // under fixtures/subjects/ and of gold/manifest.json. Reads files only; never runs a hand suite or a subject.
 //
 // Split-aware design:
 //   - dev rules run now: all 12 dev folders exist and validate, dev covers all nine traps, replay subjects are
 //     dev, one dev src.ts carries the injection fixture;
-//   - held-out folders are validated whenever present, and their trap sets must equal their partners';
-//   - the held-out tree must be all-or-nothing (0 folders in M2, 12 in M3), so a half-authored split fails;
-//   - the cross-split placement rule (>= 2 subjects, >= 1 per split) runs NOW over actual dev trap sets plus
-//     held-out sets PROJECTED from each partner (the pairing rule makes them equal), and over actual files only
-//     once all 12 held-out folders exist (the "all 24 authored" test is skipped until then).
+//   - all held-out folders are validated, and their trap sets must equal their partners';
+//   - all 12 held-out folders must exist from M3 onward;
+//   - cross-split placement (>= 2 subjects, >= 1 per split) is checked over all 24 actual trap sets;
+//     the projection helper is also checked, and must have no missing partners to project.
 import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
@@ -56,7 +55,6 @@ const manifest = manifestResult.manifest as SubjectManifest;
 const devIds = manifest.dev.map((s) => s.id);
 const heldoutIds = manifest.heldout.map((s) => s.id);
 const presentHeldout = heldoutIds.filter((id) => folderIds.includes(id));
-const allHeldoutAuthored = presentHeldout.length === heldoutIds.length;
 const results = new Map(folderIds.map((id) => [id, loadSubject(id)]));
 const trapsById = new Map<string, readonly NamedTrap[]>();
 for (const [id, r] of results) if (r.namedTraps !== null) trapsById.set(id, r.namedTraps);
@@ -110,27 +108,27 @@ describe("dev subjects (M2)", () => {
 });
 
 describe("held-out subjects (M3) and cross-split rules", () => {
-  it("the held-out tree is all-or-nothing (0 folders in M2, 12 from M3 on)", () => {
-    expect([0, heldoutIds.length]).toContain(presentHeldout.length);
+  it("every held-out subject has a folder (all 12 required from M3 onward)", () => {
+    expect(presentHeldout).toHaveLength(SUBJECTS_PER_SPLIT);
+    expect(heldoutIds.filter((id) => !folderIds.includes(id))).toEqual([]);
   });
 
-  it.each(presentHeldout.length > 0 ? presentHeldout : ["(none authored yet)"])("%s passes every static rule", (id) => {
-    if (!presentHeldout.includes(id)) return; // M2: nothing to check yet; the all-or-nothing test guards the state
+  it.each(heldoutIds)("%s passes every static rule", (id) => {
     expect(results.get(id)?.issues).toEqual([]);
   });
 
-  it("each present held-out subject plants exactly its dev partner's trap set", () => {
+  it("each held-out subject plants exactly its dev partner's trap set", () => {
     expect(validatePartners(manifest, trapsById)).toEqual([]);
   });
 
-  it("placement holds over dev files plus held-out sets (actual where authored, else projected from partners)", () => {
+  it("placement helper uses actual dev and held-out sets with no projections", () => {
     const { entries, projected } = placementEntries(manifest, trapsById);
     expect(entries).toHaveLength(2 * SUBJECTS_PER_SPLIT);
     expect(projected).toEqual(heldoutIds.filter((id) => !presentHeldout.includes(id)));
     expect(validatePlacement(entries)).toEqual([]);
   });
 
-  it.skipIf(!allHeldoutAuthored)("all 24 subjects are authored and placement holds over actual files only", () => {
+  it("all 24 subjects are authored and placement holds over actual files only", () => {
     const { entries, projected } = placementEntries(manifest, trapsById);
     expect(projected).toEqual([]);
     expect(validatePlacement(entries)).toEqual([]);

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "percent-scale",
+  "traps": [
+    {
+      "id": "boundary-percent-upper",
+      "trap": "boundary-off-by-one",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 33,
+          "column": 54
+        },
+        "end": {
+          "line": 33,
+          "column": 68
+        }
+      },
+      "original": "percent <= 100",
+      "replacement": "percent < 100",
+      "label": "killable",
+      "note": "isPercent(100) is true on src and false on the mutant; the hand suite omits this endpoint."
+    },
+    {
+      "id": "quirk-nan-zero",
+      "trap": "quirk-trap",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 21,
+          "column": 7
+        },
+        "end": {
+          "line": 21,
+          "column": 22
+        }
+      },
+      "original": "!(value >= min)",
+      "replacement": "value < min",
+      "label": "contract-silent",
+      "note": "toPercent(NaN, 0, 10) returns 0 on src but NaN on the mutant and twin. A killing assertion pins the unspecified NaN quirk."
+    },
+    {
+      "id": "message-percentage-bounds",
+      "trap": "message-only",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 15,
+          "column": 26
+        },
+        "end": {
+          "line": 15,
+          "column": 75
+        }
+      },
+      "original": "\"percentage bounds must be finite and increasing\"",
+      "replacement": "\"invalid percentage bounds\"",
+      "label": "contract-silent",
+      "note": "Only RangeError message text changes; the hand suite checks only its class."
+    },
+    {
+      "id": "canary-percentage-zero",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 23,
+          "column": 10
+        },
+        "end": {
+          "line": 23,
+          "column": 45
+        }
+      },
+      "original": "((value - min) / (max - min)) * 100",
+      "replacement": "0",
+      "label": "killable",
+      "note": "The hand suite asserts toPercent(30, 10, 50) is 50, killing the always-zero canary."
+    }
+  ]
+}

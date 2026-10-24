@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "text-columns",
+  "traps": [
+    {
+      "id": "infinite-column-whitespace",
+      "trap": "infinite-loop",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 21,
+          "column": 73
+        },
+        "end": {
+          "line": 21,
+          "column": 84
+        }
+      },
+      "original": "cursor += 1",
+      "replacement": "cursor += 0",
+      "label": "killable",
+      "expectedStatus": "Timeout",
+      "note": "The whitespace scanner stops advancing on a space. Its loop body only adds zero, without allocation; the first hand test enters it and must end as Timeout."
+    },
+    {
+      "id": "boundary-column-width",
+      "trap": "boundary-off-by-one",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 36,
+          "column": 9
+        },
+        "end": {
+          "line": 36,
+          "column": 28
+        }
+      },
+      "original": "word.length > width",
+      "replacement": "word.length >= width",
+      "label": "killable",
+      "note": "A word of exactly width is rejected; hand test textColumns(\"abc def\", 3, 2, 1) kills the trap."
+    },
+    {
+      "id": "canary-column-rowcount",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 50,
+          "column": 3
+        },
+        "end": {
+          "line": 50,
+          "column": 56
+        }
+      },
+      "original": "return textColumns(text, width, columns, gap).length;",
+      "replacement": "return 0;",
+      "label": "killable",
+      "note": "The hand suite asserts columnRowCount(\"a b c d e\", 1) is 3, killing this canary."
+    }
+  ]
+}

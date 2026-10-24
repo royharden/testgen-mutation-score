@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "parse-duration",
+  "traps": [
+    {
+      "id": "exctype-duration-token",
+      "trap": "exception-type-only",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 28,
+          "column": 33
+        },
+        "end": {
+          "line": 28,
+          "column": 80
+        }
+      },
+      "original": "throw new SyntaxError(\"invalid duration token\")",
+      "replacement": "throw new Error(\"invalid duration token\")",
+      "label": "contract-silent",
+      "note": "Only the class of a malformed-token error changes; the hand suite checks that it throws."
+    },
+    {
+      "id": "float-negative-duration-half",
+      "trap": "float-rounding",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 47,
+          "column": 16
+        },
+        "end": {
+          "line": 47,
+          "column": 84
+        }
+      },
+      "original": "(Math.sign(result) * Math.round(Math.abs(result) * factor)) / factor",
+      "replacement": "Math.round(result * factor) / factor",
+      "label": "killable",
+      "note": "Exact binary witness parseDuration(\"-2.5s\", {decimals:0}) is -3 on src and -2 on mutant. Hand tests avoid a negative exact half."
+    },
+    {
+      "id": "boundary-duration-minimum",
+      "trap": "boundary-off-by-one",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 55,
+          "column": 36
+        },
+        "end": {
+          "line": 55,
+          "column": 56
+        }
+      },
+      "original": "result < options.min",
+      "replacement": "result <= options.min",
+      "label": "killable",
+      "note": "parseDuration(\"1s\", {min:1}) succeeds on src but throws on mutant; hand tests omit equality at min."
+    },
+    {
+      "id": "canary-duration-validity",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 63,
+          "column": 5
+        },
+        "end": {
+          "line": 63,
+          "column": 17
+        }
+      },
+      "original": "return true;",
+      "replacement": "return false;",
+      "label": "killable",
+      "note": "The hand suite asserts isDuration(\"20s\") is true, killing this canary."
+    }
+  ]
+}

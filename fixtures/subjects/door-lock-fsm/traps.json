@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "door-lock-fsm",
+  "traps": [
+    {
+      "id": "deadflag-alarm-bypass",
+      "trap": "dead-flag-branch",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 25,
+          "column": 9
+        },
+        "end": {
+          "line": 25,
+          "column": 48
+        }
+      },
+      "original": "state === \"alarm\" && event === \"unlock\"",
+      "replacement": "state === \"alarm\"",
+      "label": "equivalent",
+      "note": "The mutated condition is inside the constant-false ALLOW_BYPASS branch."
+    },
+    {
+      "id": "quirk-event-order",
+      "trap": "quirk-trap",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 53,
+          "column": 10
+        },
+        "end": {
+          "line": 53,
+          "column": 35
+        }
+      },
+      "original": "Object.keys(RULES[state])",
+      "replacement": "Object.keys(RULES[state]).sort()",
+      "label": "contract-silent",
+      "note": "allowedEvents(\"locked\") changes from [\"unlock\",\"force\"] to alphabetical order, as in twin.ts. The CONTRACT leaves event order unspecified."
+    },
+    {
+      "id": "message-transition",
+      "trap": "message-only",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 28,
+          "column": 43
+        },
+        "end": {
+          "line": 28,
+          "column": 80
+        }
+      },
+      "original": "`door cannot ${event} while ${state}`",
+      "replacement": "\"invalid door transition\"",
+      "label": "contract-silent",
+      "note": "Only the Error message changes; hand tests assert Error, never message text."
+    },
+    {
+      "id": "canary-secure-false",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 49,
+          "column": 3
+        },
+        "end": {
+          "line": 49,
+          "column": 50
+        }
+      },
+      "original": "return state === \"locked\" || state === \"alarm\";",
+      "replacement": "return false;",
+      "label": "killable",
+      "note": "Disposable canary: isSecure is always false; hand tests assert locked and alarm are secure."
+    }
+  ]
+}
