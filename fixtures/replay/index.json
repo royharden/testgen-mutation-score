@@ -1,0 +1,245 @@
+{
+  "fixtures": [
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "clamp-range",
+      "arm": "A3",
+      "path": "fixtures/replay/clamp-range/A3/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "clamp-range",
+      "arm": "A4",
+      "path": "fixtures/replay/clamp-range/A4/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "clamp-range",
+      "arm": "A4",
+      "path": "fixtures/replay/clamp-range/A4/r2-c1.json",
+      "round": 2
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "clamp-range",
+      "arm": "A4",
+      "path": "fixtures/replay/clamp-range/A4/r3-c1.json",
+      "round": 3
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "clamp-range",
+      "arm": "A5",
+      "path": "fixtures/replay/clamp-range/A5/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "clamp-range",
+      "arm": "A5",
+      "path": "fixtures/replay/clamp-range/A5/r2-c1.json",
+      "round": 2
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "clamp-range",
+      "arm": "A5",
+      "path": "fixtures/replay/clamp-range/A5/r3-c1.json",
+      "round": 3
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "clamp-range",
+      "arm": "A6",
+      "path": "fixtures/replay/clamp-range/A6/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "clamp-range",
+      "arm": "A6",
+      "path": "fixtures/replay/clamp-range/A6/r2-c1.json",
+      "round": 2
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "clamp-range",
+      "arm": "A6",
+      "path": "fixtures/replay/clamp-range/A6/r3-c1.json",
+      "round": 3
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "stable-sort",
+      "arm": "A3",
+      "path": "fixtures/replay/stable-sort/A3/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "stable-sort",
+      "arm": "A4",
+      "path": "fixtures/replay/stable-sort/A4/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "stable-sort",
+      "arm": "A4",
+      "path": "fixtures/replay/stable-sort/A4/r2-c1.json",
+      "round": 2
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "stable-sort",
+      "arm": "A4",
+      "path": "fixtures/replay/stable-sort/A4/r3-c1.json",
+      "round": 3
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "stable-sort",
+      "arm": "A5",
+      "path": "fixtures/replay/stable-sort/A5/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "stable-sort",
+      "arm": "A5",
+      "path": "fixtures/replay/stable-sort/A5/r2-c1.json",
+      "round": 2
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "stable-sort",
+      "arm": "A5",
+      "path": "fixtures/replay/stable-sort/A5/r3-c1.json",
+      "round": 3
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "stable-sort",
+      "arm": "A6",
+      "path": "fixtures/replay/stable-sort/A6/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "stable-sort",
+      "arm": "A6",
+      "path": "fixtures/replay/stable-sort/A6/r2-c1.json",
+      "round": 2
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "stable-sort",
+      "arm": "A6",
+      "path": "fixtures/replay/stable-sort/A6/r3-c1.json",
+      "round": 3
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "validated-number",
+      "arm": "A3",
+      "path": "fixtures/replay/validated-number/A3/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "validated-number",
+      "arm": "A4",
+      "path": "fixtures/replay/validated-number/A4/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "validated-number",
+      "arm": "A4",
+      "path": "fixtures/replay/validated-number/A4/r2-c1.json",
+      "round": 2
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "validated-number",
+      "arm": "A4",
+      "path": "fixtures/replay/validated-number/A4/r3-c1.json",
+      "round": 3
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "validated-number",
+      "arm": "A5",
+      "path": "fixtures/replay/validated-number/A5/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "validated-number",
+      "arm": "A5",
+      "path": "fixtures/replay/validated-number/A5/r2-c1.json",
+      "round": 2
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "validated-number",
+      "arm": "A5",
+      "path": "fixtures/replay/validated-number/A5/r3-c1.json",
+      "round": 3
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "validated-number",
+      "arm": "A6",
+      "path": "fixtures/replay/validated-number/A6/r1-c1.json",
+      "round": 1
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "validated-number",
+      "arm": "A6",
+      "path": "fixtures/replay/validated-number/A6/r2-c1.json",
+      "round": 2
+    },
+    {
+      "promptSha256": "pending",
+      "slot": 1,
+      "subjectId": "validated-number",
+      "arm": "A6",
+      "path": "fixtures/replay/validated-number/A6/r3-c1.json",
+      "round": 3
+    }
+  ],
+  "schemaVersion": 1
+}

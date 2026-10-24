@@ -1,0 +1,23 @@
+{
+  "expectTwinFailure": false,
+  "note": "Designed timeout-only witness for a non-progressing descending-insertion feedback mutant; toHaveLength avoids asserting ordering. Activation must inspect actual frozen inventory outcomes; never substitute scoring traps.",
+  "expected": [
+    {
+      "decision": "rejected",
+      "subReason": null,
+      "code": "timeout",
+      "testName": "stable-sort A5 round 3 contract"
+    }
+  ],
+  "promptSha256": "pending",
+  "schemaVersion": 1,
+  "probabilistic": false,
+  "subjectId": "stable-sort",
+  "arm": "A5",
+  "round": 3,
+  "kind": "timeout-only",
+  "response": {
+    "testFile": "import { test, expect } from \"vitest\";\nimport { sortBy, sortByDesc, isSortedBy } from \"./src\";\ntest(\"stable-sort A5 round 3 contract\", () => {\n  expect(sortByDesc([1, 2], (x) => x)).toHaveLength(2);\n});"
+  },
+  "slot": 1
+}

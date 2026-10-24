@@ -89,6 +89,8 @@ export function timeoutResult(request: IsolatedRunRequest, durationMs: number, o
   const base = { ...request.target, unitSha256s: request.units.map((u) => u.unitSha256), outcome: "timeout", durationMs,
     shuffleSeed: request.shuffleSeed ?? null, tests: [], outputTruncated,
     ...(request.target.kind === "coverage" ? { coveredLines: [] } : {}) };
+  if (request.target.kind === "a1-capture") return ExecutionResultSchema.parse({ ...base,
+    observations: (request.probes ?? []).map((p) => ({ probeId: p.id, outcome: "unsupported", valueJson: null, errorName: null, message: "capture timed out" })) });
   return ExecutionResultSchema.parse("mutantKey" in request.target || request.target.kind === "planted"
     ? { ...base, mutantStatus: "Timeout", killCause: null } : base);
 }

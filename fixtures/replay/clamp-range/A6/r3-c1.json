@@ -1,0 +1,23 @@
+{
+  "expectTwinFailure": false,
+  "note": "Probabilistic Math.random fixture: pristine may fail, pass twice or disagree. Deterministic flaky coverage lives in injected gate reducer tests. Last round avoids later prompt dependence.",
+  "expected": [
+    {
+      "decision": "rejected",
+      "subReason": null,
+      "code": "flaky",
+      "testName": "clamp-range A6 round 3 contract"
+    }
+  ],
+  "promptSha256": "pending",
+  "schemaVersion": 1,
+  "probabilistic": true,
+  "subjectId": "clamp-range",
+  "arm": "A6",
+  "round": 3,
+  "kind": "flaky-probabilistic",
+  "response": {
+    "testFile": "import { test, expect } from \"vitest\";\nimport { clamp, clampAll, rangeFraction } from \"./src\";\ntest(\"clamp-range A6 round 3 contract\", () => {\n  expect(clamp(3, 0, 5)).toBe(Math.random() < 0.5 ? 3 : 4);\n});"
+  },
+  "slot": 1
+}

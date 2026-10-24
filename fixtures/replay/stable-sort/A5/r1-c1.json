@@ -1,0 +1,23 @@
+{
+  "response": {
+    "testFile": "import { test, expect } from \"vitest\";\nimport { sortBy, sortByDesc, isSortedBy } from \"./src\";\ntest(\"stable-sort A5 round 1 contract\", () => {\n  expect(sortBy([3, 1, 2], (x) => x)).toEqual([1, 2, 3]);\n});"
+  },
+  "kind": "accept",
+  "probabilistic": false,
+  "promptSha256": "pending",
+  "arm": "A5",
+  "slot": 1,
+  "subjectId": "stable-sort",
+  "expected": [
+    {
+      "decision": "accepted",
+      "subReason": null,
+      "code": null,
+      "testName": "stable-sort A5 round 1 contract"
+    }
+  ],
+  "expectTwinFailure": false,
+  "schemaVersion": 1,
+  "round": 1,
+  "note": "Designed fixture, not measured. Outcomes depend on the frozen feedback inventory; replay:check binds the actual controller prompt and never invents execution evidence."
+}
