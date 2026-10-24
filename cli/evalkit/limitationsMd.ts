@@ -1,4 +1,18 @@
 import type { PublicAnalysis } from "../core/schemas.js";
+import { PreflightRefusal } from "../core/preflight.js";
+
+/** Replace only the explicitly generated region; retain authored disclosures byte-for-byte. */
+export function mergeLimitations(existing: string, generated: string): string {
+  const markers = ["<!-- STATIC-LIMITATIONS:START -->", "<!-- STATIC-LIMITATIONS:END -->",
+    "<!-- GENERATED-LIMITATIONS:START -->", "<!-- GENERATED-LIMITATIONS:END -->"];
+  const positions = markers.map((marker) => existing.indexOf(marker));
+  if (positions.some((position, index) => position < 0 || existing.indexOf(markers[index]!, position + 1) !== -1) ||
+    positions.some((position, index) => index > 0 && position <= positions[index - 1]!)) {
+    throw new PreflightRefusal("docs/LIMITATIONS.md needs one ordered STATIC-LIMITATIONS and GENERATED-LIMITATIONS marker pair; restore the authored template before evaluation (existing text was not replaced)");
+  }
+  const start = positions[2]! + markers[2]!.length;
+  return existing.slice(0, start) + "\n\n" + generated.trimEnd() + "\n\n" + existing.slice(positions[3]!);
+}
 /** Labels are mechanical observations, never inferred equivalence or proven root causes. */
 export function limitationsMd(analyses: readonly PublicAnalysis[]): string {
   const lines = ["# Evaluation limitations", "", analyses.some((a) => a.providerMode === "mock") ? "> MOCK / REPLAY — not measured." : "> Generated from post-freeze measured artifacts.", "",
