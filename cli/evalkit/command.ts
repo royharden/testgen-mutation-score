@@ -12,7 +12,7 @@ import { summarizeLedgerCell } from "../ledger/callledger.js";
 import { compareCampaign } from "../evalkit/compare.js";
 import type { Observation } from "../evalkit/compare.js";
 import { resultsMd } from "../evalkit/resultsMd.js";
-import { limitationsMd } from "../evalkit/limitationsMd.js";
+import { limitationsMd, mergeLimitations } from "../evalkit/limitationsMd.js";
 import { sha256Hex } from "../core/mutantKey.js";
 
 const isMissing = (e: unknown) => e instanceof Error && "code" in e && e.code === "ENOENT";
@@ -187,7 +187,11 @@ export async function evalCommand(context: CliContext): Promise<number> {
   for (const item of loaded) for (const cell of item.analysis.cells) if (cell.row) cell.row = unique.get(identity(cell))!.row;
   const analyses = loaded.map((l) => PublicAnalysisSchema.parse(l.analysis));
   const comparison = compareCampaign(manifest, args.split, observations);
-  const markdown = resultsMd(rows, comparison, analyses), limitations = limitationsMd(analyses);
+  const markdown = resultsMd(rows, comparison, analyses), generatedLimitations = limitationsMd(analyses);
+  // Validate the authored template before writing any held-out report. Mock/dev outputs stand alone.
+  const limitations = args.provider !== "mock" && args.split === "heldout"
+    ? mergeLimitations(await readText(root, "docs/LIMITATIONS.md"), generatedLimitations)
+    : generatedLimitations;
   // Mock evaluation reports are restricted to results/mock; public viewer projections retain MOCK provenance.
   const output = args.provider === "mock" ? `results/mock/${args.split}` : args.split === "dev" ? "results/dev" : "results";
   await writeOutput(root, `${output}/results.md`, markdown);

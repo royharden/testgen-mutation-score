@@ -1,0 +1,1168 @@
+{
+  "schemaVersion": 1,
+  "runId": "sample-workbench",
+  "campaignId": null,
+  "split": "dev",
+  "providerMode": "mock",
+  "executionProvenance": "recorded-fixture",
+  "sandboxQualified": false,
+  "manifestEdition": 1,
+  "seed": 39,
+  "inventories": [
+    {
+      "subjectId": "sample-clamp",
+      "srcSha256": "f30ccb3895b0afc7c4909be8ace47e478dd5d98f5d7cb73e54e9a2a531a1f1f4",
+      "engine": "inhouse",
+      "compileErrorCount": 0,
+      "mutants": [
+        {
+          "key": "f336b9a53ae24e17afea772e63945b35b30952a792ea13a4da132fc40afecb88",
+          "range": {
+            "start": {
+              "line": 3,
+              "column": 3
+            },
+            "end": {
+              "line": 3,
+              "column": 19
+            }
+          },
+          "partition": "feedback",
+          "source": "inhouse"
+        },
+        {
+          "key": "7ba2ff2ab5b7c67148b266827d54897c783e29e84abbb8d4943b558eefc35daa",
+          "range": {
+            "start": {
+              "line": 4,
+              "column": 3
+            },
+            "end": {
+              "line": 4,
+              "column": 20
+            }
+          },
+          "partition": "feedback",
+          "source": "inhouse"
+        },
+        {
+          "key": "7c07b256f4425950c8c8ade9978f19b4b69d9563f98b1786f6c69746fc469a7b",
+          "range": {
+            "start": {
+              "line": 5,
+              "column": 3
+            },
+            "end": {
+              "line": 5,
+              "column": 52
+            }
+          },
+          "partition": "feedback",
+          "source": "inhouse"
+        },
+        {
+          "key": "fc96328dcb35790adbe7fa3cb4e9aedbef22ef7fc23762a0b521cd786df32454",
+          "range": {
+            "start": {
+              "line": 6,
+              "column": 3
+            },
+            "end": {
+              "line": 6,
+              "column": 59
+            }
+          },
+          "partition": "scoring",
+          "source": "inhouse"
+        },
+        {
+          "key": "59d2be3165d75c94e232e591a252349053415e6066a1e3de83ced468946a37a3",
+          "range": {
+            "start": {
+              "line": 7,
+              "column": 3
+            },
+            "end": {
+              "line": 7,
+              "column": 60
+            }
+          },
+          "partition": "scoring",
+          "source": "inhouse"
+        },
+        {
+          "key": "1949e49ac0c2d50cbea6e5eb1b7ec9a3e4b495a134d47e4fa0e3ce6f11cc69a7",
+          "range": {
+            "start": {
+              "line": 8,
+              "column": 3
+            },
+            "end": {
+              "line": 8,
+              "column": 60
+            }
+          },
+          "partition": "scoring",
+          "source": "inhouse"
+        },
+        {
+          "key": "7e5e787a32008e0836b8371927c6a59eeb68e1c92b1f2527c377ba1bb520a36d",
+          "range": {
+            "start": {
+              "line": 9,
+              "column": 3
+            },
+            "end": {
+              "line": 9,
+              "column": 17
+            }
+          },
+          "partition": "scoring",
+          "source": "inhouse"
+        }
+      ],
+      "planted": [
+        {
+          "trapId": "sample-boundary",
+          "trap": "boundary-off-by-one",
+          "label": "killable",
+          "range": {
+            "start": {
+              "line": 6,
+              "column": 3
+            },
+            "end": {
+              "line": 6,
+              "column": 59
+            }
+          }
+        },
+        {
+          "trapId": "sample-equivalent",
+          "trap": "equivalent-loop-bound",
+          "label": "equivalent",
+          "range": {
+            "start": {
+              "line": 7,
+              "column": 3
+            },
+            "end": {
+              "line": 7,
+              "column": 60
+            }
+          }
+        },
+        {
+          "trapId": "sample-loop",
+          "trap": "infinite-loop",
+          "label": "killable",
+          "range": {
+            "start": {
+              "line": 8,
+              "column": 3
+            },
+            "end": {
+              "line": 8,
+              "column": 60
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "cells": [
+    {
+      "subjectId": "sample-clamp",
+      "arm": "A0",
+      "repeat": 0,
+      "state": "complete",
+      "issues": [],
+      "accounting": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "usd": null,
+        "runErrors": 0
+      },
+      "row": {
+        "schemaVersion": 1,
+        "campaignId": null,
+        "split": "dev",
+        "subjectId": "sample-clamp",
+        "arm": "A0",
+        "repeat": 0,
+        "providerMode": "mock",
+        "executionProvenance": "recorded-fixture",
+        "engine": "inhouse",
+        "counts": {
+          "killed": 0,
+          "timeout": 0,
+          "survived": 0,
+          "noCoverage": 7,
+          "compileError": 0,
+          "runtimeError": 0
+        },
+        "labelledEquivalents": 1,
+        "scoreRaw": 0.0,
+        "scoreKilledOnly": 0.0,
+        "scoreWithoutEquivalents": 0.0,
+        "planted": [
+          {
+            "trapId": "sample-boundary",
+            "trap": "boundary-off-by-one",
+            "label": "killable",
+            "status": "NoCoverage"
+          },
+          {
+            "trapId": "sample-equivalent",
+            "trap": "equivalent-loop-bound",
+            "label": "equivalent",
+            "status": "NoCoverage"
+          },
+          {
+            "trapId": "sample-loop",
+            "trap": "infinite-loop",
+            "label": "killable",
+            "status": "NoCoverage"
+          }
+        ],
+        "overfit": {
+          "accepted": 0,
+          "failingTwin": 0,
+          "twinIncomplete": 0,
+          "rate": null
+        },
+        "keptUnits": 0,
+        "rejectedByCode": {
+          "syntax": 0,
+          "forbidden-import": 0,
+          "no-assertion": 0,
+          "fails-pristine": 0,
+          "flaky": 0,
+          "timeout": 0,
+          "no-new-kill": 0
+        },
+        "runErrors": 0,
+        "lineCoverage": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "usd": null,
+        "costPerAcceptedTestUsd": null,
+        "scoreGainPerDollarPp": null,
+        "gainBaseline": null,
+        "naReasons": [
+          "Fictional sample values; not measured.",
+          "Mock execution has no paid ledger.",
+          "zero accepted units"
+        ]
+      },
+      "topUpOverfit": null,
+      "matrix": [
+        {
+          "kind": "scoring",
+          "mutantKey": "fc96328dcb35790adbe7fa3cb4e9aedbef22ef7fc23762a0b521cd786df32454",
+          "trapId": null,
+          "unitSha256s": [],
+          "status": "NoCoverage"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "59d2be3165d75c94e232e591a252349053415e6066a1e3de83ced468946a37a3",
+          "trapId": null,
+          "unitSha256s": [],
+          "status": "NoCoverage"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "1949e49ac0c2d50cbea6e5eb1b7ec9a3e4b495a134d47e4fa0e3ce6f11cc69a7",
+          "trapId": null,
+          "unitSha256s": [],
+          "status": "NoCoverage"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "7e5e787a32008e0836b8371927c6a59eeb68e1c92b1f2527c377ba1bb520a36d",
+          "trapId": null,
+          "unitSha256s": [],
+          "status": "NoCoverage"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-boundary",
+          "unitSha256s": [],
+          "status": "NoCoverage"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-equivalent",
+          "unitSha256s": [],
+          "status": "NoCoverage"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-loop",
+          "unitSha256s": [],
+          "status": "NoCoverage"
+        }
+      ],
+      "twinFailures": []
+    },
+    {
+      "subjectId": "sample-clamp",
+      "arm": "A2",
+      "repeat": 0,
+      "state": "complete",
+      "issues": [],
+      "accounting": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "usd": null,
+        "runErrors": 0
+      },
+      "row": {
+        "schemaVersion": 1,
+        "campaignId": null,
+        "split": "dev",
+        "subjectId": "sample-clamp",
+        "arm": "A2",
+        "repeat": 0,
+        "providerMode": "mock",
+        "executionProvenance": "recorded-fixture",
+        "engine": "inhouse",
+        "counts": {
+          "killed": 2,
+          "timeout": 1,
+          "survived": 3,
+          "noCoverage": 1,
+          "compileError": 0,
+          "runtimeError": 0
+        },
+        "labelledEquivalents": 1,
+        "scoreRaw": 0.42857142857142855,
+        "scoreKilledOnly": 0.2857142857142857,
+        "scoreWithoutEquivalents": 0.5,
+        "planted": [
+          {
+            "trapId": "sample-boundary",
+            "trap": "boundary-off-by-one",
+            "label": "killable",
+            "status": "Killed"
+          },
+          {
+            "trapId": "sample-equivalent",
+            "trap": "equivalent-loop-bound",
+            "label": "equivalent",
+            "status": "Survived"
+          },
+          {
+            "trapId": "sample-loop",
+            "trap": "infinite-loop",
+            "label": "killable",
+            "status": "Timeout"
+          }
+        ],
+        "overfit": {
+          "accepted": 1,
+          "failingTwin": 0,
+          "twinIncomplete": 0,
+          "rate": 0.0
+        },
+        "keptUnits": 1,
+        "rejectedByCode": {
+          "syntax": 0,
+          "forbidden-import": 0,
+          "no-assertion": 0,
+          "fails-pristine": 0,
+          "flaky": 0,
+          "timeout": 0,
+          "no-new-kill": 0
+        },
+        "runErrors": 0,
+        "lineCoverage": 0.75,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "usd": null,
+        "costPerAcceptedTestUsd": null,
+        "scoreGainPerDollarPp": null,
+        "gainBaseline": null,
+        "naReasons": [
+          "Fictional sample values; not measured.",
+          "Mock execution has no paid ledger."
+        ]
+      },
+      "topUpOverfit": null,
+      "matrix": [
+        {
+          "kind": "scoring",
+          "mutantKey": "fc96328dcb35790adbe7fa3cb4e9aedbef22ef7fc23762a0b521cd786df32454",
+          "trapId": null,
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "59d2be3165d75c94e232e591a252349053415e6066a1e3de83ced468946a37a3",
+          "trapId": null,
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "1949e49ac0c2d50cbea6e5eb1b7ec9a3e4b495a134d47e4fa0e3ce6f11cc69a7",
+          "trapId": null,
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0"
+          ],
+          "status": "NoCoverage"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "7e5e787a32008e0836b8371927c6a59eeb68e1c92b1f2527c377ba1bb520a36d",
+          "trapId": null,
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-boundary",
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-equivalent",
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-loop",
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0"
+          ],
+          "status": "Timeout"
+        }
+      ],
+      "twinFailures": []
+    },
+    {
+      "subjectId": "sample-clamp",
+      "arm": "A3",
+      "repeat": 1,
+      "state": "complete",
+      "issues": [],
+      "accounting": {
+        "inputTokens": 1200,
+        "outputTokens": 320,
+        "usd": null,
+        "runErrors": 0
+      },
+      "row": {
+        "schemaVersion": 1,
+        "campaignId": null,
+        "split": "dev",
+        "subjectId": "sample-clamp",
+        "arm": "A3",
+        "repeat": 1,
+        "providerMode": "mock",
+        "executionProvenance": "recorded-fixture",
+        "engine": "inhouse",
+        "counts": {
+          "killed": 1,
+          "timeout": 1,
+          "survived": 4,
+          "noCoverage": 1,
+          "compileError": 0,
+          "runtimeError": 0
+        },
+        "labelledEquivalents": 1,
+        "scoreRaw": 0.2857142857142857,
+        "scoreKilledOnly": 0.14285714285714285,
+        "scoreWithoutEquivalents": 0.3333333333333333,
+        "planted": [
+          {
+            "trapId": "sample-boundary",
+            "trap": "boundary-off-by-one",
+            "label": "killable",
+            "status": "Survived"
+          },
+          {
+            "trapId": "sample-equivalent",
+            "trap": "equivalent-loop-bound",
+            "label": "equivalent",
+            "status": "Survived"
+          },
+          {
+            "trapId": "sample-loop",
+            "trap": "infinite-loop",
+            "label": "killable",
+            "status": "Timeout"
+          }
+        ],
+        "overfit": {
+          "accepted": 1,
+          "failingTwin": 0,
+          "twinIncomplete": 0,
+          "rate": 0.0
+        },
+        "keptUnits": 1,
+        "rejectedByCode": {
+          "syntax": 0,
+          "forbidden-import": 0,
+          "no-assertion": 0,
+          "fails-pristine": 0,
+          "flaky": 0,
+          "timeout": 0,
+          "no-new-kill": 0
+        },
+        "runErrors": 0,
+        "lineCoverage": 0.75,
+        "inputTokens": 1200,
+        "outputTokens": 320,
+        "usd": null,
+        "costPerAcceptedTestUsd": null,
+        "scoreGainPerDollarPp": null,
+        "gainBaseline": "A0",
+        "naReasons": [
+          "Fictional sample values; not measured.",
+          "Mock execution has no paid ledger."
+        ]
+      },
+      "topUpOverfit": null,
+      "matrix": [
+        {
+          "kind": "scoring",
+          "mutantKey": "fc96328dcb35790adbe7fa3cb4e9aedbef22ef7fc23762a0b521cd786df32454",
+          "trapId": null,
+          "unitSha256s": [
+            "0668d7b5ee96b265e87ec8995cc5a7cb2fc33a7b1cf6af87bea3a46e61ed7816"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "59d2be3165d75c94e232e591a252349053415e6066a1e3de83ced468946a37a3",
+          "trapId": null,
+          "unitSha256s": [
+            "0668d7b5ee96b265e87ec8995cc5a7cb2fc33a7b1cf6af87bea3a46e61ed7816"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "1949e49ac0c2d50cbea6e5eb1b7ec9a3e4b495a134d47e4fa0e3ce6f11cc69a7",
+          "trapId": null,
+          "unitSha256s": [
+            "0668d7b5ee96b265e87ec8995cc5a7cb2fc33a7b1cf6af87bea3a46e61ed7816"
+          ],
+          "status": "NoCoverage"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "7e5e787a32008e0836b8371927c6a59eeb68e1c92b1f2527c377ba1bb520a36d",
+          "trapId": null,
+          "unitSha256s": [
+            "0668d7b5ee96b265e87ec8995cc5a7cb2fc33a7b1cf6af87bea3a46e61ed7816"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-boundary",
+          "unitSha256s": [
+            "0668d7b5ee96b265e87ec8995cc5a7cb2fc33a7b1cf6af87bea3a46e61ed7816"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-equivalent",
+          "unitSha256s": [
+            "0668d7b5ee96b265e87ec8995cc5a7cb2fc33a7b1cf6af87bea3a46e61ed7816"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-loop",
+          "unitSha256s": [
+            "0668d7b5ee96b265e87ec8995cc5a7cb2fc33a7b1cf6af87bea3a46e61ed7816"
+          ],
+          "status": "Timeout"
+        }
+      ],
+      "twinFailures": []
+    },
+    {
+      "subjectId": "sample-clamp",
+      "arm": "A4",
+      "repeat": 1,
+      "state": "complete",
+      "issues": [],
+      "accounting": {
+        "inputTokens": 1200,
+        "outputTokens": 320,
+        "usd": null,
+        "runErrors": 0
+      },
+      "row": {
+        "schemaVersion": 1,
+        "campaignId": null,
+        "split": "dev",
+        "subjectId": "sample-clamp",
+        "arm": "A4",
+        "repeat": 1,
+        "providerMode": "mock",
+        "executionProvenance": "recorded-fixture",
+        "engine": "inhouse",
+        "counts": {
+          "killed": 2,
+          "timeout": 1,
+          "survived": 3,
+          "noCoverage": 1,
+          "compileError": 0,
+          "runtimeError": 0
+        },
+        "labelledEquivalents": 1,
+        "scoreRaw": 0.42857142857142855,
+        "scoreKilledOnly": 0.2857142857142857,
+        "scoreWithoutEquivalents": 0.5,
+        "planted": [
+          {
+            "trapId": "sample-boundary",
+            "trap": "boundary-off-by-one",
+            "label": "killable",
+            "status": "Killed"
+          },
+          {
+            "trapId": "sample-equivalent",
+            "trap": "equivalent-loop-bound",
+            "label": "equivalent",
+            "status": "Survived"
+          },
+          {
+            "trapId": "sample-loop",
+            "trap": "infinite-loop",
+            "label": "killable",
+            "status": "Timeout"
+          }
+        ],
+        "overfit": {
+          "accepted": 1,
+          "failingTwin": 0,
+          "twinIncomplete": 0,
+          "rate": 0.0
+        },
+        "keptUnits": 1,
+        "rejectedByCode": {
+          "syntax": 0,
+          "forbidden-import": 0,
+          "no-assertion": 0,
+          "fails-pristine": 0,
+          "flaky": 0,
+          "timeout": 0,
+          "no-new-kill": 0
+        },
+        "runErrors": 0,
+        "lineCoverage": 0.75,
+        "inputTokens": 1200,
+        "outputTokens": 320,
+        "usd": null,
+        "costPerAcceptedTestUsd": null,
+        "scoreGainPerDollarPp": null,
+        "gainBaseline": "A0",
+        "naReasons": [
+          "Fictional sample values; not measured.",
+          "Mock execution has no paid ledger."
+        ]
+      },
+      "topUpOverfit": null,
+      "matrix": [
+        {
+          "kind": "scoring",
+          "mutantKey": "fc96328dcb35790adbe7fa3cb4e9aedbef22ef7fc23762a0b521cd786df32454",
+          "trapId": null,
+          "unitSha256s": [
+            "9cba501d4bcb81ca2ba6d2fc1d7e8168036bd1aef3160159b10bc1ea6162c533"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "59d2be3165d75c94e232e591a252349053415e6066a1e3de83ced468946a37a3",
+          "trapId": null,
+          "unitSha256s": [
+            "9cba501d4bcb81ca2ba6d2fc1d7e8168036bd1aef3160159b10bc1ea6162c533"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "1949e49ac0c2d50cbea6e5eb1b7ec9a3e4b495a134d47e4fa0e3ce6f11cc69a7",
+          "trapId": null,
+          "unitSha256s": [
+            "9cba501d4bcb81ca2ba6d2fc1d7e8168036bd1aef3160159b10bc1ea6162c533"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "7e5e787a32008e0836b8371927c6a59eeb68e1c92b1f2527c377ba1bb520a36d",
+          "trapId": null,
+          "unitSha256s": [
+            "9cba501d4bcb81ca2ba6d2fc1d7e8168036bd1aef3160159b10bc1ea6162c533"
+          ],
+          "status": "NoCoverage"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-boundary",
+          "unitSha256s": [
+            "9cba501d4bcb81ca2ba6d2fc1d7e8168036bd1aef3160159b10bc1ea6162c533"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-equivalent",
+          "unitSha256s": [
+            "9cba501d4bcb81ca2ba6d2fc1d7e8168036bd1aef3160159b10bc1ea6162c533"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-loop",
+          "unitSha256s": [
+            "9cba501d4bcb81ca2ba6d2fc1d7e8168036bd1aef3160159b10bc1ea6162c533"
+          ],
+          "status": "Timeout"
+        }
+      ],
+      "twinFailures": []
+    },
+    {
+      "subjectId": "sample-clamp",
+      "arm": "A5",
+      "repeat": 1,
+      "state": "complete",
+      "issues": [],
+      "accounting": {
+        "inputTokens": 1200,
+        "outputTokens": 960,
+        "usd": null,
+        "runErrors": 0
+      },
+      "row": {
+        "schemaVersion": 1,
+        "campaignId": null,
+        "split": "dev",
+        "subjectId": "sample-clamp",
+        "arm": "A5",
+        "repeat": 1,
+        "providerMode": "mock",
+        "executionProvenance": "recorded-fixture",
+        "engine": "inhouse",
+        "counts": {
+          "killed": 3,
+          "timeout": 1,
+          "survived": 2,
+          "noCoverage": 1,
+          "compileError": 0,
+          "runtimeError": 0
+        },
+        "labelledEquivalents": 1,
+        "scoreRaw": 0.5714285714285714,
+        "scoreKilledOnly": 0.42857142857142855,
+        "scoreWithoutEquivalents": 0.6666666666666666,
+        "planted": [
+          {
+            "trapId": "sample-boundary",
+            "trap": "boundary-off-by-one",
+            "label": "killable",
+            "status": "Killed"
+          },
+          {
+            "trapId": "sample-equivalent",
+            "trap": "equivalent-loop-bound",
+            "label": "equivalent",
+            "status": "Survived"
+          },
+          {
+            "trapId": "sample-loop",
+            "trap": "infinite-loop",
+            "label": "killable",
+            "status": "Timeout"
+          }
+        ],
+        "overfit": {
+          "accepted": 2,
+          "failingTwin": 1,
+          "twinIncomplete": 0,
+          "rate": 0.5
+        },
+        "keptUnits": 2,
+        "rejectedByCode": {
+          "syntax": 1,
+          "forbidden-import": 1,
+          "no-assertion": 1,
+          "fails-pristine": 1,
+          "flaky": 1,
+          "timeout": 1,
+          "no-new-kill": 1
+        },
+        "runErrors": 0,
+        "lineCoverage": 0.75,
+        "inputTokens": 1200,
+        "outputTokens": 960,
+        "usd": null,
+        "costPerAcceptedTestUsd": null,
+        "scoreGainPerDollarPp": null,
+        "gainBaseline": "A0",
+        "naReasons": [
+          "Fictional sample values; not measured.",
+          "Mock execution has no paid ledger."
+        ]
+      },
+      "topUpOverfit": null,
+      "matrix": [
+        {
+          "kind": "feedback",
+          "mutantKey": "f336b9a53ae24e17afea772e63945b35b30952a792ea13a4da132fc40afecb88",
+          "trapId": null,
+          "unitSha256s": [
+            "4684ff60139463633117e113ed8829e28c21d7d11d1bf26a2e7de0eb5199c28c",
+            "7ca86e4673369a36864640b8be15f8e47b4f4f5c56c8ef643c1d2017c078be57"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "feedback",
+          "mutantKey": "7ba2ff2ab5b7c67148b266827d54897c783e29e84abbb8d4943b558eefc35daa",
+          "trapId": null,
+          "unitSha256s": [
+            "4684ff60139463633117e113ed8829e28c21d7d11d1bf26a2e7de0eb5199c28c",
+            "7ca86e4673369a36864640b8be15f8e47b4f4f5c56c8ef643c1d2017c078be57"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "feedback",
+          "mutantKey": "7c07b256f4425950c8c8ade9978f19b4b69d9563f98b1786f6c69746fc469a7b",
+          "trapId": null,
+          "unitSha256s": [
+            "4684ff60139463633117e113ed8829e28c21d7d11d1bf26a2e7de0eb5199c28c",
+            "7ca86e4673369a36864640b8be15f8e47b4f4f5c56c8ef643c1d2017c078be57"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "fc96328dcb35790adbe7fa3cb4e9aedbef22ef7fc23762a0b521cd786df32454",
+          "trapId": null,
+          "unitSha256s": [
+            "4684ff60139463633117e113ed8829e28c21d7d11d1bf26a2e7de0eb5199c28c",
+            "7ca86e4673369a36864640b8be15f8e47b4f4f5c56c8ef643c1d2017c078be57"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "59d2be3165d75c94e232e591a252349053415e6066a1e3de83ced468946a37a3",
+          "trapId": null,
+          "unitSha256s": [
+            "4684ff60139463633117e113ed8829e28c21d7d11d1bf26a2e7de0eb5199c28c",
+            "7ca86e4673369a36864640b8be15f8e47b4f4f5c56c8ef643c1d2017c078be57"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "1949e49ac0c2d50cbea6e5eb1b7ec9a3e4b495a134d47e4fa0e3ce6f11cc69a7",
+          "trapId": null,
+          "unitSha256s": [
+            "4684ff60139463633117e113ed8829e28c21d7d11d1bf26a2e7de0eb5199c28c",
+            "7ca86e4673369a36864640b8be15f8e47b4f4f5c56c8ef643c1d2017c078be57"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "7e5e787a32008e0836b8371927c6a59eeb68e1c92b1f2527c377ba1bb520a36d",
+          "trapId": null,
+          "unitSha256s": [
+            "4684ff60139463633117e113ed8829e28c21d7d11d1bf26a2e7de0eb5199c28c",
+            "7ca86e4673369a36864640b8be15f8e47b4f4f5c56c8ef643c1d2017c078be57"
+          ],
+          "status": "NoCoverage"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-boundary",
+          "unitSha256s": [
+            "4684ff60139463633117e113ed8829e28c21d7d11d1bf26a2e7de0eb5199c28c",
+            "7ca86e4673369a36864640b8be15f8e47b4f4f5c56c8ef643c1d2017c078be57"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-equivalent",
+          "unitSha256s": [
+            "4684ff60139463633117e113ed8829e28c21d7d11d1bf26a2e7de0eb5199c28c",
+            "7ca86e4673369a36864640b8be15f8e47b4f4f5c56c8ef643c1d2017c078be57"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-loop",
+          "unitSha256s": [
+            "4684ff60139463633117e113ed8829e28c21d7d11d1bf26a2e7de0eb5199c28c",
+            "7ca86e4673369a36864640b8be15f8e47b4f4f5c56c8ef643c1d2017c078be57"
+          ],
+          "status": "Timeout"
+        }
+      ],
+      "twinFailures": [
+        "7ca86e4673369a36864640b8be15f8e47b4f4f5c56c8ef643c1d2017c078be57"
+      ]
+    },
+    {
+      "subjectId": "sample-clamp",
+      "arm": "A6",
+      "repeat": 1,
+      "state": "complete",
+      "issues": [],
+      "accounting": {
+        "inputTokens": 1200,
+        "outputTokens": 320,
+        "usd": null,
+        "runErrors": 0
+      },
+      "row": {
+        "schemaVersion": 1,
+        "campaignId": null,
+        "split": "dev",
+        "subjectId": "sample-clamp",
+        "arm": "A6",
+        "repeat": 1,
+        "providerMode": "mock",
+        "executionProvenance": "recorded-fixture",
+        "engine": "inhouse",
+        "counts": {
+          "killed": 4,
+          "timeout": 1,
+          "survived": 2,
+          "noCoverage": 0,
+          "compileError": 0,
+          "runtimeError": 0
+        },
+        "labelledEquivalents": 1,
+        "scoreRaw": 0.7142857142857143,
+        "scoreKilledOnly": 0.5714285714285714,
+        "scoreWithoutEquivalents": 0.8333333333333334,
+        "planted": [
+          {
+            "trapId": "sample-boundary",
+            "trap": "boundary-off-by-one",
+            "label": "killable",
+            "status": "Killed"
+          },
+          {
+            "trapId": "sample-equivalent",
+            "trap": "equivalent-loop-bound",
+            "label": "equivalent",
+            "status": "Survived"
+          },
+          {
+            "trapId": "sample-loop",
+            "trap": "infinite-loop",
+            "label": "killable",
+            "status": "Timeout"
+          }
+        ],
+        "overfit": {
+          "accepted": 2,
+          "failingTwin": 0,
+          "twinIncomplete": 0,
+          "rate": 0.0
+        },
+        "keptUnits": 2,
+        "rejectedByCode": {
+          "syntax": 0,
+          "forbidden-import": 0,
+          "no-assertion": 0,
+          "fails-pristine": 0,
+          "flaky": 0,
+          "timeout": 0,
+          "no-new-kill": 0
+        },
+        "runErrors": 0,
+        "lineCoverage": 0.75,
+        "inputTokens": 1200,
+        "outputTokens": 320,
+        "usd": null,
+        "costPerAcceptedTestUsd": null,
+        "scoreGainPerDollarPp": null,
+        "gainBaseline": "A2",
+        "naReasons": [
+          "Fictional sample values; not measured.",
+          "Mock execution has no paid ledger."
+        ]
+      },
+      "topUpOverfit": {
+        "accepted": 1,
+        "failingTwin": 0,
+        "twinIncomplete": 0,
+        "rate": 0
+      },
+      "matrix": [
+        {
+          "kind": "feedback",
+          "mutantKey": "f336b9a53ae24e17afea772e63945b35b30952a792ea13a4da132fc40afecb88",
+          "trapId": null,
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0",
+            "775bd227a13d9fb23acf10a470c26e947e4303f2c8030037113d15ddb58705f3"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "feedback",
+          "mutantKey": "7ba2ff2ab5b7c67148b266827d54897c783e29e84abbb8d4943b558eefc35daa",
+          "trapId": null,
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0",
+            "775bd227a13d9fb23acf10a470c26e947e4303f2c8030037113d15ddb58705f3"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "feedback",
+          "mutantKey": "7c07b256f4425950c8c8ade9978f19b4b69d9563f98b1786f6c69746fc469a7b",
+          "trapId": null,
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0",
+            "775bd227a13d9fb23acf10a470c26e947e4303f2c8030037113d15ddb58705f3"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "fc96328dcb35790adbe7fa3cb4e9aedbef22ef7fc23762a0b521cd786df32454",
+          "trapId": null,
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0",
+            "775bd227a13d9fb23acf10a470c26e947e4303f2c8030037113d15ddb58705f3"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "59d2be3165d75c94e232e591a252349053415e6066a1e3de83ced468946a37a3",
+          "trapId": null,
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0",
+            "775bd227a13d9fb23acf10a470c26e947e4303f2c8030037113d15ddb58705f3"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "1949e49ac0c2d50cbea6e5eb1b7ec9a3e4b495a134d47e4fa0e3ce6f11cc69a7",
+          "trapId": null,
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0",
+            "775bd227a13d9fb23acf10a470c26e947e4303f2c8030037113d15ddb58705f3"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "scoring",
+          "mutantKey": "7e5e787a32008e0836b8371927c6a59eeb68e1c92b1f2527c377ba1bb520a36d",
+          "trapId": null,
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0",
+            "775bd227a13d9fb23acf10a470c26e947e4303f2c8030037113d15ddb58705f3"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-boundary",
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0",
+            "775bd227a13d9fb23acf10a470c26e947e4303f2c8030037113d15ddb58705f3"
+          ],
+          "status": "Killed"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-equivalent",
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0",
+            "775bd227a13d9fb23acf10a470c26e947e4303f2c8030037113d15ddb58705f3"
+          ],
+          "status": "Survived"
+        },
+        {
+          "kind": "planted",
+          "mutantKey": null,
+          "trapId": "sample-loop",
+          "unitSha256s": [
+            "c0023d8ec8683bb24d66250d1e784a1b0331a989f5b97e2ba4436bd56e1276a0",
+            "775bd227a13d9fb23acf10a470c26e947e4303f2c8030037113d15ddb58705f3"
+          ],
+          "status": "Timeout"
+        }
+      ],
+      "twinFailures": []
+    },
+    {
+      "subjectId": "sample-clamp",
+      "arm": "A6",
+      "repeat": 2,
+      "state": "incomplete",
+      "issues": [
+        "missing-artifact"
+      ],
+      "accounting": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "usd": null,
+        "runErrors": 0
+      },
+      "row": null,
+      "topUpOverfit": null,
+      "matrix": [],
+      "twinFailures": []
+    }
+  ]
+}

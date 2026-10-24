@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "runs": [
+    "sample-workbench"
+  ]
+}
