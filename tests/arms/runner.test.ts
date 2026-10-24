@@ -10,6 +10,7 @@ import type { IsolatedRunRequest, FeedbackExecutor } from "../../cli/engines/eng
 import type { ExecutionResult, MutantInventory } from "../../cli/core/schemas.js";
 import { sha256Hex } from "../../cli/core/mutantKey.js";
 import { BudgetExceeded } from "../../cli/ledger/callledger.js";
+import type { ProviderRequest } from "../../cli/providers/index.js";
 
 const roots: string[] = [];
 afterEach(async () => { for (const root of roots.splice(0)) await rm(root, { recursive: true, force: true }); });
@@ -31,7 +32,7 @@ function result(request: IsolatedRunRequest): ExecutionResult {
     shuffleSeed: request.shuffleSeed ?? null, tests: request.units.map((u) => ({ name: u.testName, unitSha256: u.unitSha256,
       status: killed ? "failed" : "passed", cause: killed ? "assertion" : null })), outputTruncated: false,
     ...("mutantKey" in request.target || request.target.kind === "planted" ? { mutantStatus: killed ? "Killed" : "Survived", killCause: killed ? "assertion" : null } : {}),
-    ...(request.target.kind === "coverage" ? { coveredLines: [3] } : {}) } as ExecutionResult;
+    ...(request.target.kind === "coverage" ? { coveredLines: request.units.length ? [3] : [], executableLines: [2, 3] } : {}) } as ExecutionResult;
 }
 async function fixture() {
   const root = await mkdtemp(path.join(tmpdir(), "testgen-runner-")); roots.push(root);
@@ -75,6 +76,20 @@ it("red pristine hand preflight records refusal before any model call", async ()
   expect(record.refusal?.reason).toContain("hand suite fails pristine");
 });
 
+it("records whole frozen-suite executable coverage for A0 and A2 without candidate probes", async () => {
+  const root = await fixture();
+  const run = await runExperiment({ root, split: "dev", arms: ["A0", "A2"], repeats: 1, heldoutConfirm: false,
+    model: "mock-replay", maxOutputTokens: 100, sandbox: "docker", now,
+    provider: { mode: "mock", async generate() { throw new Error("nonmodel arms never call"); } },
+    run: { async run(request) { return result(request); } } });
+  for (const arm of ["A0", "A2"]) {
+    const artifact = CellArtifactSchema.parse(JSON.parse(await readFile(path.join(root, `results/mock/loops/${run.runId}/dev-subject-${arm}-0.json`), "utf8")));
+    const coverage = artifact.loopExecutions.filter((e) => e.kind === "coverage").at(-1);
+    expect(coverage).toMatchObject({ kind: "coverage", outcome: "passed", executableLines: [2, 3],
+      coveredLines: arm === "A0" ? [] : [3], unitSha256s: artifact.cell.keptUnits });
+  }
+});
+
 it("failed scorer is retained before terminal journal and resume never repeats model generation", async () => {
   const root = await fixture(); let calls = 0;
   const provider = { mode: "mock" as const, async generate() { calls++; return { output: { testFile: hand }, usage: null }; } };
@@ -107,16 +122,21 @@ it("an interrupted durable frozen loop repairs scoring only, while missing loop 
 
 it("A3 sends exactly one prompt; A5 retains three feedback-only rounds and fresh state", async () => {
   const requests: string[] = [];
+  const contexts: ProviderRequest["context"][] = [];
   const executor: FeedbackExecutor = { async execute(request) {
     if (request.kind === "feedback") return [];
     return [result({ sourceText: source, units: request.units, target: request.kind === "pristine" ? { kind: "pristine", attempt: request.attempt } : { kind: request.kind },
       ...(request.kind === "pristine-union" ? { shuffleSeed: request.shuffleSeed } : {}) }) as never];
   } };
   const deps = { executor, staging: { async commit() { return []; } }, snapshotProtected: async () => ({ source: "s", hand: "h", twin: "t" }), now,
-    provider: { mode: "mock" as const, async generate(request: { prompt: { text: string } }) { requests.push(request.prompt.text); return { output: { testFile: "broken (" }, usage: null }; } } };
-  const input = { subjectId: "dev-subject", repeat: 0, source, seed: 1, model: "mock-replay", maxOutputTokens: 100, initialState: emptyGateState(), feedbackMutants: [] };
+    provider: { mode: "mock" as const, async generate(request: ProviderRequest) { requests.push(request.prompt.text); contexts.push(request.context); return { output: { testFile: "broken (" }, usage: null }; } } };
+  const input = { runId: "controller-provenance", subjectId: "dev-subject", repeat: 0, source, seed: 1, model: "mock-replay", maxOutputTokens: 100, initialState: emptyGateState(), feedbackMutants: [] };
   await runModelCell({ ...input, arm: "A3" }, deps); expect(requests).toHaveLength(1);
   requests.length = 0; const generated = await runModelCell({ ...input, arm: "A5" }, deps);
   expect(requests).toHaveLength(3); expect(generated.state.keptUnits).toEqual([]);
   expect(requests.join("\n")).not.toContain("twin.ts");
+  expect(contexts.every((context) => context.runId === "controller-provenance" && context.repeat === 0 && context.subjectId === "dev-subject")).toBe(true);
+  contexts.length = 0;
+  await runModelCell({ ...input, runId: "second-run", repeat: 2, arm: "A5" }, deps);
+  expect(contexts.map((context) => [context.runId, context.repeat, context.round])).toEqual([["second-run", 2, 1], ["second-run", 2, 2], ["second-run", 2, 3]]);
 });

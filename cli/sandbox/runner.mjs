@@ -30,6 +30,13 @@ for (const unit of request.units) {
   hashOfFile.set(file, unit.unitSha256);
   await writeFile(file, unit.text, "utf8");
 }
+// A0 has no candidate tests. A trusted no-op test starts coverage reporting without importing the subject;
+// include:[src.ts] requests its actual instrumented zero counters. Never invent a source-line denominator.
+const emptyCoverageHarness = request.target.kind === "coverage" && files.length === 0 ? path.join(work, "coverage-empty.test.ts") : null;
+if (emptyCoverageHarness) {
+  await writeFile(emptyCoverageHarness, 'import { test } from "vitest"; test("trusted empty-suite coverage", () => {});\n', "utf8");
+  files.push(emptyCoverageHarness);
+}
 let result;
 let context;
 try {
@@ -119,6 +126,7 @@ try {
   if (!context) throw new Error("runner-unavailable");
   const tests = [];
   const collect = (task, file) => {
+    if (emptyCoverageHarness && path.resolve(file.filepath) === emptyCoverageHarness) return;
     if (Array.isArray(task.tasks)) for (const child of task.tasks) collect(child, file);
     else if (task.type === "test") {
       const errors = task.result?.errors ?? [];
@@ -145,19 +153,27 @@ try {
     const coverage = JSON.parse(await readFile(path.join(work, "coverage/coverage-final.json"), "utf8"));
     const subject = Object.entries(coverage).find(([file]) => path.resolve(file) === path.join(work, "src.ts"))?.[1];
     if (!subject) throw new Error("coverage-missing");
-    const lines = new Set();
-    for (const [id, count] of Object.entries(subject.s ?? {})) if (Number(count) > 0) {
-      const location = subject.statementMap[id];
-      for (let line = location.start.line; line <= location.end.line; line++) lines.add(line);
+    // Istanbul line coverage counts statement START lines, with maximum hit count per line.
+    // Counting the whole multiline statement span would incorrectly include blank/comment lines.
+    if (!subject.statementMap || !subject.s || typeof subject.statementMap !== "object" || typeof subject.s !== "object")
+      throw new Error("coverage-invalid");
+    const executable = new Set(), covered = new Set();
+    for (const [id, location] of Object.entries(subject.statementMap)) {
+      const line = location?.start?.line, count = subject.s[id];
+      if (!Number.isInteger(line) || line < 1 || typeof count !== "number" || !Number.isFinite(count) || count < 0)
+        throw new Error("coverage-invalid");
+      executable.add(line);
+      if (count > 0) covered.add(line);
     }
-    result.coveredLines = [...lines].sort((a, b) => a - b);
+    result.executableLines = [...executable].sort((a, b) => a - b);
+    result.coveredLines = [...covered].sort((a, b) => a - b);
   }
   }
 } catch {
   // Fail closed. A module compile error, reporter failure, storage exhaustion, or API mismatch cannot kill.
   result = { ...request.target, unitSha256s: request.units.map((u) => u.unitSha256), outcome: "error",
     durationMs: Date.now() - started, shuffleSeed: request.shuffleSeed ?? null, tests: [], outputTruncated: false,
-    ...(request.target.kind === "coverage" ? { coveredLines: [] } : {}),
+    ...(request.target.kind === "coverage" ? { coveredLines: [], executableLines: [] } : {}),
     ...(request.target.kind === "a1-capture" ? { observations: (request.probes ?? []).map((p) => ({ probeId: p.id,
       outcome: "unsupported", valueJson: null, errorName: null, message: "capture runner failed" })) } : {}),
     ...("mutantKey" in request.target || request.target.kind === "planted" ? { mutantStatus: "RuntimeError", killCause: null } : {}) };

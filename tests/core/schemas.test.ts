@@ -417,6 +417,8 @@ describe("other contracts", () => {
       schemaVersion: 1,
       event: "reserved",
       callId: "call-1",
+      runId: "ledger-schema-test",
+      repeat: 0,
       at: AT,
       provider: "anthropic",
       model: "pinned-model",
@@ -433,6 +435,10 @@ describe("other contracts", () => {
       reason: null,
     };
     expect(LedgerEntrySchema.safeParse(l).success).toBe(true);
+    expect(LedgerEntrySchema.safeParse({ ...l, runId: undefined }).success).toBe(false);
+    expect(LedgerEntrySchema.safeParse({ ...l, repeat: undefined }).success).toBe(false);
+    expect(LedgerEntrySchema.safeParse({ ...l, subjectId: null }).success).toBe(false);
+    expect(LedgerEntrySchema.safeParse({ ...l, repeat: -1 }).success).toBe(false);
     expect(LedgerEntrySchema.safeParse({ ...l, reservedUsd: null }).success).toBe(false);
     expect(LedgerEntrySchema.safeParse({ ...l, event: "blocked", reservedUsd: null }).success).toBe(false);
     expect(LedgerEntrySchema.safeParse({ ...l, event: "blocked", reservedUsd: null, reason: "unknown price" }).success).toBe(true);

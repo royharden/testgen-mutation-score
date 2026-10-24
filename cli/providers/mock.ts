@@ -7,7 +7,8 @@ import type { ReplayFixture, ReplayIndex } from "../core/schemas.js";
 import { ProviderError } from "./index.js";
 import type { ModelProvider, ProviderContext, ProviderRequest } from "./index.js";
 
-export function replaySlot(context: ProviderContext): string { return `${context.subjectId}/${context.arm}/r${context.round}-c${context.slot}`; }
+/** Replay keys deliberately exclude run/repeat: hashes cover actual prompt bytes, slot pins fixture identity. */
+export function replaySlot(context: Pick<ProviderContext, "subjectId" | "arm" | "round" | "slot">): string { return `${context.subjectId}/${context.arm}/r${context.round}-c${context.slot}`; }
 export interface LoadedReplay { index: ReplayIndex; fixtures: Map<string, ReplayFixture> }
 export async function loadReplay(root: string): Promise<LoadedReplay> {
   try {
