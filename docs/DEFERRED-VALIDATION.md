@@ -176,3 +176,48 @@ The lock is an accidental-rerun guard, not tamper proofing or restored held-out 
 | M5-I1 | Initial all-subject fixture hashing/freeze, actual in-house compiler-filtered enumeration, statement-group inventory split, immutable re-read, and Stryker activation-report ingestion | No inventory or compiler execution; per-patch compiler cost unmeasured | After fixture validation, `npm run cli -- mutants --execute --split all --engine inhouse`; inspect `results/mutants/`; verify changed hand/twin/traps/src refuses existing edition; for chosen Stryker engine provide actual sandbox reports via `--engine stryker --stryker-reports <report-directory>` before the first inventory edition | M5 | pending |
 | M5-H1 | Held-out lock/journal, strict budget-blocked fields, scorer error receipt before terminal journal, scoring-only recovery and unchanged-input resume without replaying observed paid cells | Authored injected regression tests never run; filesystem durability and process interruption remain unproven | `npm test -- tests/arms/runner.test.ts`; in a disposable activation campaign interrupt before/after ledger reservation/send, frozen receipt, scorer write, cell write and journal completion. Resume only unstarted cells or repair scoring from a durable frozen loop; ambiguous prefreeze started cell must visibly refuse resend. Change config/model/prices/fixtures/manifest/inventory and require refusal | M5 | pending |
 | M5-S1 | Sanitized public RunRecord catalog, separate scorer/loop artifacts and apply-ready exact-byte suite references | File output source inspected; no viewer/evaluator/apply execution | Inspect activated run/catalog JSON against exported schemas; M6 loads frozen cell source/inventory hashes and unit bytes for evaluation/apply and publishes sanitized scoring/inventory companion; M7 loads only public schemas/data | M5 | pending |
+
+## M6 evaluation, public analysis, rulings and apply
+
+Source and regression tests are authored only. No install, compiler, lint, tests, subject, scorer, provider,
+browser, server or container ran. `results/results.md` remains **not yet measured**. Evaluation reads immutable
+run/frozen/loop/cell/scoring companions, inventory and frozen fixture identities; no scoring field was added
+to generation RunRecord, prompt inputs or gate. All seven rejection counters are populated, including zeros.
+
+Mock evaluation reports go under `results/mock/<split>/`; measured dev reports under `results/dev/`, and
+measured held-out reports under `results/`. Split separation preserves the held-out placeholder during dev work.
+The sanitized `public/analysis/<runId>.json` companion is a viewer projection, analogous to public RunRecord,
+and may intentionally contain MOCK or SAMPLE data with explicit provenance/banners. This reconciles the mock
+report restriction with the actual static viewer journey; mock data never populates measured result tables.
+`publishRunAnalysis` runs only after generation returns and validates persisted post-freeze artifacts; `eval`
+refreshes the same canonical projection. Missing/invalid cells have null rows plus retained accounting.
+
+Scoring uses generated scoring mutants plus scored planted traps, with planted outcomes also separate.
+Equivalent adjustment removes only authored planted equivalents from numerator and denominator. Inventory
+compiler exclusions are separate counts with no partition assignment. Twin error/timeout/missing evidence
+is incomplete, never an overfit failure. A6 exposes combined and generated top-up overfit separately, and
+cost per accepted test uses top-up admissions. Any required subject/arm/repeat missing or invalid suppresses
+all campaign inference, including subject means, repeat ranges, bootstrap and hypothesis; observed cells remain.
+
+The ledger now records exact run/subject/arm/repeat provenance. Per-cell USD derives only from validated ledger
+attempt lifecycles, including explicit retries and failed-billable attempts once. Missing old provenance or
+outstanding reservations leaves cost n/a. Unknown reported usage retains the conservative ledger USD charge
+and an explicit non-invoice qualification; reported token counts cannot imply known total usage.
+
+Fresh final-suite coverage runs for every arm before durable freeze, including A0. The trusted runner reads
+Istanbul statement-start line counters into covered/executable line sets, without guessing from source text.
+An empty A0 suite uses a trusted no-op harness that does not import the subject; the actual report must include
+the original subject with zero hit counters. Failure is retained as a RunError; missing legacy denominators are n/a.
+
+| ID | What | Why deferred | Exact command / steps to validate | Added | Outcome |
+|---|---|---|---|---|---|
+| M6-E1 | Score variants, Timeout sensitivity, equivalent numerator/denominator removal, compile counts, zero denominators, per-unit twins, A6 top-up and ledger cost gain baselines | Source inspection only | `npx vitest run tests/core/score.test.ts tests/eval`; `npm run typecheck`; `npm run lint` | M6 | pending |
+| M6-E2 | Full-manifest required cells, error/missing repeat suppression, equal subject means, three aggregate ranges, deterministic 10,000 subject-paired bootstrap | Tests authored, not executed | Run M6-E1; remove one wholly unobserved subject and one A6 repeat; require every inferential aggregate/interval/verdict to remain not computable, without complete-case alternatives | M6 | pending |
+| M6-E3 | Artifact-only eval command, run/frozen/loop/cell/scorer/inventory/fixture identity guards, restored cell origins on resume, exact unit bytes and scoring/feedback partition references | No evaluation executed | `npx vitest run tests/eval/command.test.ts`; after activation run `npm run eval -- <mock-run-id> --provider mock --split dev` and the held-out selector; tamper each companion identity in a disposable copy and require null/incomplete cells, never fabricated scores | M6 | pending |
+| M6-E4 | Mock/measured report isolation, public MOCK/SAMPLE provenance and strict browser-safe PublicAnalysisSchema, generated markdown/limitations, measured placeholder untouched | No runtime viewer/eval | Run M6-E3; compare `results/results.md` before/after mock/dev evaluation; inspect `public/analysis/<runId>.json` and viewer banners. After actual measured held-out evaluation verify results are qualified separately and public JSON contains no local paths/environment/transport fields | M6 | pending |
+| M6-E5 | Exact ledger run/repeat linkage, valid reserve/terminal ordering, retry and failed-billable once-only charges, unknown token usage and outstanding reservation n/a | No ledger/test execution | `npx vitest run tests/ledger/callledger.test.ts tests/eval`; tiny-cap smoke after activation, inspect matching callId/attempt/run/subject/arm/repeat events and compare evaluator USD with ledger, never cached RunCell.usd | M6 | pending |
+| M6-E6 | Actual executable coverage denominator for every final frozen suite, Istanbul statement-start semantics, A0 source report with zero counters, legacy n/a and final coverage failure RunError | Programmatic Vitest/V8 coverage API is unverified | `npx vitest run tests/arms/runner.test.ts tests/core/schemas.test.ts tests/eval`; activated sandbox run A0/A2/A4/A5 and verify final loop coverage exact frozen unit set and executable lines from report; A0 must show 0 over nonzero actual instrumented denominator; absent report must refuse measurement | M6 | pending |
+| M6-A1 | Ruling log parse/line numbers, full-log v1/v2 tuple resolution, revocation, changed-subject invalidation and unknown record references | Tests authored only | `npx vitest run tests/rulings/rulings.test.ts tests/apply/apply.test.ts tests/cli/index.test.ts`; `npm run typecheck`; `npm run lint` | M6 | pending |
+| M6-A2 | Apply dry run and exclusive new-file writes, staged byte/source/run/frozen identity, full-batch prevalidation, plan fingerprint, canonical destinations, traversal/junction/collision refusal and resumed-origin journal hash | No filesystem tests executed | Run M6-A1, then disposable Windows/OneDrive and Linux probes with actual junctions/symlinks and concurrent exclusive-create collisions; source or stage change after dry run must invalidate the write plan | M6 | pending |
+| M6-A3 | Residual hostile concurrent ancestor swap between path checks and filesystem operations | Portable path checks cannot eliminate cross-platform TOCTOU without OS-level directory handles/sandbox | Run M6-A2 race probes in a disposable tree; use an OS directory-handle/sandbox design before claiming adversarial concurrent path-swap resistance. Current guards provide preflight and immediate-write checks, not atomic directory-capability security | M6 | pending |
+| M6-C1 | Thin eval script, default CLI eval/apply handlers and post-run public analysis publisher resolve without cyclic top-level await or duplicate command truth | No module loader executed | `npm run typecheck`; `npm run eval -- --provider mock --split dev`; `npm run cli -- eval <mock-run-id> --provider mock --split dev`; compare generated artifacts, verify no provider/executor is constructed by evaluation | M6 | pending |

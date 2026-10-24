@@ -553,7 +553,14 @@ export const LoopExecutionResultSchema = z
     z.strictObject({ kind: z.literal("pristine"), attempt: z.union([z.literal(1), z.literal(2)]), ...executionBase }),
     z.strictObject({ kind: z.literal("pristine-union"), ...executionBase }),
     z.strictObject({ kind: z.literal("feedback-mutant"), ...executionBase, ...mutantOutcome }),
-    z.strictObject({ kind: z.literal("coverage"), coveredLines: z.array(z.number().int().min(1)), ...executionBase }),
+    z.strictObject({ kind: z.literal("coverage"), coveredLines: z.array(z.number().int().min(1)),
+      /** Actual instrumented executable lines. Optional only for legacy/constructed evidence. */
+      executableLines: z.array(z.number().int().min(1)).optional(), ...executionBase }).superRefine((r, ctx) => {
+        if (new Set(r.coveredLines).size !== r.coveredLines.length ||
+          (r.executableLines !== undefined && (new Set(r.executableLines).size !== r.executableLines.length ||
+            r.coveredLines.some((line) => !r.executableLines!.includes(line)))))
+          ctx.addIssue({ code: "custom", message: "coverage lines must be unique and covered lines executable" });
+      }),
     z.strictObject({ kind: z.literal("a1-capture"), observations: z.array(A1ObservationSchema).max(64), ...executionBase }),
   ])
   .refine(killCauseConsistent, { message: KILL_CAUSE_MESSAGE, path: ["killCause"] });
@@ -785,6 +792,63 @@ export const EvalRowSchema = z
   });
 export type EvalRow = z.infer<typeof EvalRowSchema>;
 
+/** Post-freeze public companion. Never read by prompts, gate or generation. No paths, transport or environment fields. */
+export const PublicAnalysisSchema = z.strictObject({
+  schemaVersion,
+  runId: RunIdSchema,
+  campaignId: RunIdSchema.nullable(),
+  split: SplitSchema,
+  providerMode: ProviderModeSchema,
+  executionProvenance: ExecutionProvenanceSchema,
+  sandboxQualified: z.boolean(),
+  manifestEdition: z.number().int().min(1),
+  seed: SeedSchema,
+  inventories: z.array(z.strictObject({
+    subjectId: SlugSchema, srcSha256: Sha256HexSchema,
+    engine: EngineSchema, compileErrorCount: NonNegInt,
+    mutants: z.array(z.strictObject({ key: Sha256HexSchema, range: SourceRangeSchema,
+      partition: PartitionSchema, source: MutantSourceSchema })),
+    planted: z.array(z.strictObject({ trapId: SlugSchema, trap: NamedTrapSchema, label: TrapLabelSchema, range: SourceRangeSchema })),
+  })),
+  cells: z.array(z.strictObject({ subjectId: SlugSchema, arm: ArmIdSchema, repeat: NonNegInt,
+    state: z.enum(["complete", "incomplete"]),
+    issues: z.array(z.enum(["missing-artifact", "invalid-artifact", "incomplete-measurement"])),
+    accounting: z.strictObject({ inputTokens: NonNegInt, outputTokens: NonNegInt, usd: NonNegNumber.nullable(), runErrors: NonNegInt }),
+    row: EvalRowSchema.nullable(),
+    /** A6 generated top-up only; row.overfit is the combined hand + top-up suite. */
+    topUpOverfit: z.strictObject({ accepted: NonNegInt, failingTwin: NonNegInt, twinIncomplete: NonNegInt, rate: Fraction }).nullable(),
+    matrix: z.array(z.strictObject({ kind: z.enum(["feedback", "scoring", "planted"]),
+      mutantKey: Sha256HexSchema.nullable(), trapId: SlugSchema.nullable(),
+      unitSha256s: z.array(Sha256HexSchema), status: MutantStatusSchema })),
+    twinFailures: z.array(Sha256HexSchema),
+  })),
+}).superRefine((a, ctx) => {
+  if (a.providerMode === "mock" && a.executionProvenance === "measured")
+    ctx.addIssue({ code: "custom", message: "mock analysis cannot be measured" });
+  const ids = new Set(a.inventories.map((i) => i.subjectId));
+  if (ids.size !== a.inventories.length) ctx.addIssue({ code: "custom", message: "duplicate inventory" });
+  const cells = new Set<string>();
+  for (const c of a.cells) {
+    const key = `${c.subjectId}/${c.arm}/${c.repeat}`;
+    if (cells.has(key)) ctx.addIssue({ code: "custom", message: "duplicate analysis cell" });
+    cells.add(key);
+    if (c.state === "complete" && (c.row === null || c.issues.length > 0)) ctx.addIssue({ code: "custom", message: "complete analysis needs an observed row without issues" });
+    if (c.row && (c.row.subjectId !== c.subjectId || c.row.arm !== c.arm || c.row.repeat !== c.repeat ||
+      c.row.providerMode !== a.providerMode || c.row.executionProvenance !== a.executionProvenance ||
+      c.row.campaignId !== a.campaignId || c.row.split !== a.split || !ids.has(c.subjectId)))
+      ctx.addIssue({ code: "custom", message: "analysis row identity mismatch" });
+    const inventory = a.inventories.find((i) => i.subjectId === c.subjectId);
+    for (const m of c.matrix) {
+      if ((m.kind === "planted") !== (m.trapId !== null) || (m.kind !== "planted") !== (m.mutantKey !== null))
+        ctx.addIssue({ code: "custom", message: "matrix target identity mismatch" });
+      if (m.kind === "planted" ? !inventory?.planted.some((t) => t.trapId === m.trapId) :
+        !inventory?.mutants.some((m2) => m2.key === m.mutantKey && m2.partition === m.kind))
+        ctx.addIssue({ code: "custom", message: "matrix target absent from its inventory partition" });
+    }
+  }
+});
+export type PublicAnalysis = z.infer<typeof PublicAnalysisSchema>;
+
 // ---------------------------------------------------------------------------------------------------------
 // Rulings (approvals) — PLAN §2.7
 // ---------------------------------------------------------------------------------------------------------
@@ -815,15 +879,18 @@ export const LedgerEntrySchema = z
     schemaVersion,
     event: z.enum(LEDGER_EVENTS),
     callId: IdSchema,
+    /** Exact owning run/cell. Missing legacy provenance is invalid, never inferred from cached USD. */
+    runId: RunIdSchema,
+    repeat: NonNegInt,
     at: IsoTimestampSchema,
     provider: ProviderModeSchema,
     model: z.string().min(1),
     /** Date of the price table row used; null when the price is unknown (which blocks live calls). */
     priceTableDate: IsoDateSchema.nullable(),
     budgetScope: SplitSchema,
-    subjectId: SlugSchema.nullable(),
-    arm: ModelArmIdSchema.nullable(),
-    round: NonNegInt.nullable(),
+    subjectId: SlugSchema,
+    arm: ModelArmIdSchema,
+    round: z.number().int().min(1),
     /** 0 for the first attempt; each explicit retry is reserved separately. */
     attempt: NonNegInt,
     reservedUsd: NonNegNumber.nullable(),

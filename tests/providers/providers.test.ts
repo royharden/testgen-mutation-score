@@ -5,7 +5,7 @@ import { parseModelOutput, ProviderError } from "../../cli/providers/index.js";
 import type { FetchLike, ProviderRequest } from "../../cli/providers/index.js";
 import { createAnthropicProvider } from "../../cli/providers/anthropic.js";
 import { createOpenAICompatibleProvider } from "../../cli/providers/openaiCompatible.js";
-const request: ProviderRequest = { prompt: buildPrompt({ subjectId: "clamp-range", source: "source", keptTests: [], arm: "A3", round: 1, maxOutputTokens: 100 }), context: { subjectId: "clamp-range", arm: "A3", round: 1, slot: 1 }, model: "pinned-test-model", maxOutputTokens: 100 };
+const request: ProviderRequest = { prompt: buildPrompt({ subjectId: "clamp-range", source: "source", keptTests: [], arm: "A3", round: 1, maxOutputTokens: 100 }), context: { runId: "provider-test", subjectId: "clamp-range", arm: "A3", repeat: 0, round: 1, slot: 1 }, model: "pinned-test-model", maxOutputTokens: 100 };
 const usage = { inputTokens: 3, outputTokens: 5 };
 it("does not repair markdown/non-JSON/unknown keys and distinguishes cap/truncation", () => {
   for (const text of ["```json\n{}\n```", '{"testFile":"x","extra":1}', "[]"]) expect(() => parseModelOutput(text, false, usage)).toThrow(ProviderError);

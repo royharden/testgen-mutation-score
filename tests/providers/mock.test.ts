@@ -9,14 +9,15 @@ import { createMockProvider, createReplayBindingProvider, loadReplay } from "../
 import type { ProviderRequest } from "../../cli/providers/index.js";
 const roots: string[] = [];
 afterEach(async () => { for (const root of roots.splice(0)) await rm(root, { recursive: true, force: true }); });
-const request: ProviderRequest = { prompt: buildPrompt({ subjectId: "clamp-range", source: "source", keptTests: [], arm: "A5", survivors: [], round: 1, maxOutputTokens: 100 }), context: { subjectId: "clamp-range", arm: "A5", round: 1, slot: 1 }, model: "mock", maxOutputTokens: 100 };
+const request: ProviderRequest = { prompt: buildPrompt({ subjectId: "clamp-range", source: "source", keptTests: [], arm: "A5", survivors: [], round: 1, maxOutputTokens: 100 }), context: { runId: "mock-test", subjectId: "clamp-range", arm: "A5", repeat: 0, round: 1, slot: 1 }, model: "mock", maxOutputTokens: 100 };
 async function corpus(hash: string) {
   const root = await mkdtemp(path.join(tmpdir(), "mock-replay-")); roots.push(root);
   const relative = "fixtures/replay/clamp-range/A5/r1-c1.json";
   await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
   const canonical = JSON.parse(await readFile(fileURLToPath(new URL("../../fixtures/replay/clamp-range/A5/r1-c1.json", import.meta.url)), "utf8")) as Record<string, unknown>;
   await writeFile(path.join(root, relative), JSON.stringify({ ...canonical, promptSha256: hash }));
-  await writeFile(path.join(root, "fixtures/replay/index.json"), JSON.stringify({ schemaVersion: 1, fixtures: [{ ...request.context, path: relative, promptSha256: hash }] }));
+  const { subjectId, arm, round, slot } = request.context;
+  await writeFile(path.join(root, "fixtures/replay/index.json"), JSON.stringify({ schemaVersion: 1, fixtures: [{ subjectId, arm, round, slot, path: relative, promptSha256: hash }] }));
   return root;
 }
 it("runtime never falls back to a slot for pending/drifted full hashes", async () => {

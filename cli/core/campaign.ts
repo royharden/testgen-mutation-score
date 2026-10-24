@@ -8,7 +8,7 @@ import { PreflightRefusal } from "./preflight.js";
 
 const LockSchema = z.strictObject({ schemaVersion: z.literal(1), campaignId: RunIdSchema, createdAt: z.string(),
   hashes: z.record(z.string(), Sha256HexSchema) });
-const JournalSchema = z.strictObject({ schemaVersion: z.literal(1), event: z.enum(["started", "complete", "error", "budget-blocked"]),
+export const JournalSchema = z.strictObject({ schemaVersion: z.literal(1), event: z.enum(["started", "complete", "error", "budget-blocked"]),
   subjectId: SlugSchema, arm: ArmIdSchema, repeat: z.number().int().min(0), runId: RunIdSchema,
   artifact: z.string().nullable(), suiteSha256: Sha256HexSchema.nullable(), at: z.string() });
 export type JournalEntry = z.infer<typeof JournalSchema>;

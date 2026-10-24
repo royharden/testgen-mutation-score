@@ -12,6 +12,8 @@ import { runExperiment } from "./arms/runner.js";
 import { createProvider, budgetedProvider } from "./providers/index.js";
 import { CallLedger, estimateWorstCase, loadPrices } from "./ledger/callledger.js";
 import { createSandboxRunner, hostProcessEnv } from "./sandbox/sandboxrun.js";
+import { applyCommand } from "./apply/apply.js";
+import { evalCommand, publishRunAnalysis } from "./evalkit/command.js";
 
 export type CliCommand = "run" | "mutants" | "eval" | "apply" | "replay:check";
 export interface ParsedArgs {
@@ -20,21 +22,23 @@ export interface ParsedArgs {
   retries: number; model?: string; campaignId?: string; resume?: string; heldoutConfirm: boolean; write: boolean;
   strykerReports?: string; image?: string; positional: string[];
   writeHashes: boolean;
+  rulings?: string[];
 }
 export interface CliContext { repoRoot: string; args: ParsedArgs; stdout: (line: string) => void; stderr: (line: string) => void }
-/** M6 registers these real implementations without introducing nonexistent imports into M5. */
+/** Embedders/tests may override either default handler. Importing the defaults performs no execution. */
 export interface CliExtensionHandlers { eval?: (context: CliContext) => Promise<number>; apply?: (context: CliContext) => Promise<number> }
-const valueFlags = new Set(["provider", "sandbox", "split", "subjects", "arms", "repeats", "engine", "max-output-tokens", "retries", "model", "campaign-id", "resume", "stryker-reports", "image"]);
+const defaultExtensions: Required<CliExtensionHandlers> = { eval: evalCommand, apply: applyCommand };
+const valueFlags = new Set(["provider", "sandbox", "split", "subjects", "arms", "repeats", "engine", "max-output-tokens", "retries", "model", "campaign-id", "resume", "stryker-reports", "image", "rulings"]);
 const booleanFlags = new Set(["execute", "live", "dry-run", "heldout-confirm", "write", "write-hashes"]);
 function parseArgsUnchecked(argv: readonly string[]): ParsedArgs {
   const commands: CliCommand[] = ["run", "mutants", "eval", "apply", "replay:check"];
   const first = argv[0], command: CliCommand = first && !first.startsWith("--") ? first as CliCommand : "run";
   if (!commands.includes(command)) throw new PreflightRefusal(`unknown command: ${command}`);
   const tokens = first === command ? argv.slice(1) : argv;
-  const values = new Map<string, string>(), flags = new Set<string>(), positional: string[] = [];
+  const values = new Map<string, string>(), flags = new Set<string>(), positional: string[] = [], orderedRulingInputs: string[] = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index]!;
-    if (!token.startsWith("--")) { positional.push(token); continue; }
+    if (!token.startsWith("--")) { positional.push(token); orderedRulingInputs.push(token); continue; }
     const flag = token.slice(2);
     if (!valueFlags.has(flag) && !booleanFlags.has(flag)) throw new PreflightRefusal(`unknown flag: --${flag}`);
     if (values.has(flag) || flags.has(flag)) throw new PreflightRefusal(`duplicate flag: --${flag}`);
@@ -43,6 +47,7 @@ function parseArgsUnchecked(argv: readonly string[]): ParsedArgs {
       const value = tokens[++index];
       if (!value || value.startsWith("--")) throw new PreflightRefusal(`missing value for --${flag}`);
       values.set(flag, value);
+      if (flag === "rulings") orderedRulingInputs.push(value);
     }
   }
   const modes = ["execute", "live", "dry-run"].filter((mode) => flags.has(mode));
@@ -61,6 +66,8 @@ function parseArgsUnchecked(argv: readonly string[]): ParsedArgs {
   if ((flags.has("heldout-confirm") || values.has("resume") || values.has("campaign-id")) && (command !== "run" || split !== "heldout" || mode === "dry-run"))
     throw new PreflightRefusal("campaign flags require held-out run execution");
   if (flags.has("write") && command !== "apply") throw new PreflightRefusal("--write is only valid for apply");
+  if (values.has("rulings") && command !== "apply") throw new PreflightRefusal("--rulings is only valid for apply");
+  if (command === "apply" && mode !== "dry-run") throw new PreflightRefusal("apply uses dry-run by default and --write for new files; execution modes are invalid");
   if (flags.has("write-hashes") && command !== "replay:check") throw new PreflightRefusal("--write-hashes is only valid for replay:check");
   if (command !== "apply" && command !== "eval" && positional.length) throw new PreflightRefusal("unexpected positional arguments");
   const integer = (name: string, fallback: number, max: number, min = 1) => {
@@ -75,6 +82,7 @@ function parseArgsUnchecked(argv: readonly string[]): ParsedArgs {
     engine: EngineSchema.parse(values.get("engine") ?? "inhouse"), maxOutputTokens: integer("max-output-tokens", 2048, 8192),
     retries: integer("retries", 0, 3, 0), heldoutConfirm: flags.has("heldout-confirm"), write: flags.has("write"), writeHashes: flags.has("write-hashes"), positional };
   if (subjects) result.subjects = subjects;
+  if (values.has("rulings")) result.rulings = orderedRulingInputs;
   for (const [flag, key] of [["model", "model"], ["campaign-id", "campaignId"], ["resume", "resume"], ["stryker-reports", "strykerReports"], ["image", "image"]] as const) {
     const value = values.get(flag); if (value) result[key] = value;
   }
@@ -135,8 +143,7 @@ export async function runCli(argv: readonly string[], options: { root?: string; 
     const args = parseArgs(argv), repoRoot = options.root ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
     const context = { repoRoot, args, stdout, stderr };
     if (args.command === "apply" || args.command === "eval") {
-      const handler = options.extensions?.[args.command];
-      if (!handler) throw new PreflightRefusal(`${args.command} implementation belongs to M6; no evaluation or write was performed`);
+      const handler = options.extensions?.[args.command] ?? defaultExtensions[args.command];
       return await handler(context);
     }
     if (args.command === "replay:check") {
@@ -177,6 +184,7 @@ export async function runCli(argv: readonly string[], options: { root?: string; 
       run: sandbox, ...(ledger ? { accounting: () => ledger.totals } : {}),
       frozenConfig: { split: args.split, subjects: args.subjects ?? null, arms: args.arms, repeats: args.repeats, provider: args.provider,
         sandbox: args.sandbox, image, model, maxOutputTokens: args.maxOutputTokens, retries: args.retries, budgetUsd: budget } });
+    if (result.cells.length) await publishRunAnalysis(repoRoot, result);
     stdout(`${result.status}: ${result.runId}; ${result.cells.length} retained cells; ${result.missingCells.length} missing; exit ${result.exitCode}`);
     return result.exitCode;
   } catch (error) {

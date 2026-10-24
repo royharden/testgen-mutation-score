@@ -12,15 +12,20 @@ it("rejects incompatible execution and campaign flags before construction", () =
   ]) expect(() => parseArgs(flags)).toThrow();
   expect(parseArgs([])).toMatchObject({ command: "run", mode: "dry-run", provider: "mock", repeats: 3 });
   expect(parseArgs(["mutants", "--execute"])).toMatchObject({ command: "mutants", split: "all" });
+  expect(parseArgs(["apply", "first.jsonl", "--rulings", "second.jsonl", "third.jsonl"]).rulings)
+    .toEqual(["first.jsonl", "second.jsonl", "third.jsonl"]);
 });
 
-it("M6 dispatch passes concrete arguments and never pretends an absent handler completed", async () => {
+it("M6 dispatch has a concrete apply default and retains explicit handler overrides", async () => {
   const out: string[] = [];
-  expect(await runCli(["eval"], { stdout: (line) => out.push(line), stderr: (line) => out.push(line) })).toBe(2);
-  expect(out.join("\n")).toContain("M6");
+  expect(await runCli(["apply"], { stdout: (line) => out.push(line), stderr: (line) => out.push(line) })).toBe(2);
+  expect(out.join("\n")).toContain("requires --rulings");
   expect(await runCli(["apply", "rulings.jsonl", "--write"], { root: "C:/review-root", extensions: {
     apply: async (context) => { expect(context.args.write).toBe(true); expect(context.args.positional).toEqual(["rulings.jsonl"]); expect(context.repoRoot).toBe("C:/review-root"); return 0; },
   } })).toBe(0);
+  expect(await runCli(["eval"], { extensions: { eval: async (context) => {
+    expect(context.args.command).toBe("eval"); return 0;
+  } } })).toBe(0);
 });
 
 it("default dry run reads all 24 subjects without constructing a provider or executor", async () => {

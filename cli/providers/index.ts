@@ -7,7 +7,7 @@ import { createMockProvider } from "./mock.js";
 import { createAnthropicProvider } from "./anthropic.js";
 import { createOpenAICompatibleProvider } from "./openaiCompatible.js";
 
-export interface ProviderContext { subjectId: string; arm: ModelArmId; round: number; slot: number }
+export interface ProviderContext { runId: string; subjectId: string; arm: ModelArmId; repeat: number; round: number; slot: number }
 export interface TokenUsage { inputTokens: number; outputTokens: number }
 export interface ProviderRequest { prompt: BuiltPrompt; context: ProviderContext; model: string; maxOutputTokens: number }
 export interface ProviderResult { output: ModelOutput; usage: TokenUsage | null }

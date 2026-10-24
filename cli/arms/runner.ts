@@ -59,7 +59,7 @@ export interface CellDependencies {
   executor: FeedbackExecutor; staging: StagingStore; snapshotProtected: ProtectedSnapshot; now: () => string;
   provider: ModelProvider; onPrompt?: (request: ProviderRequest) => void;
 }
-export async function runModelCell(input: { subjectId: string; arm: ModelArmId; repeat: number; source: string;
+export async function runModelCell(input: { runId: string; subjectId: string; arm: ModelArmId; repeat: number; source: string;
   seed: number; model: string; maxOutputTokens: number; initialState: GateState;
   feedbackMutants: readonly Pick<MutantRecord, "key" | "range" | "replacement">[] }, deps: CellDependencies) {
   let state: GateState = { keptUnits: [...input.initialState.keptUnits], killedFeedbackKeys: [...input.initialState.killedFeedbackKeys], coveredLines: [...input.initialState.coveredLines] };
@@ -67,7 +67,7 @@ export async function runModelCell(input: { subjectId: string; arm: ModelArmId; 
   let inputTokens = 0, outputTokens = 0, error: unknown, budgetBlocked = false, terminalExit: 0 | 3 | 4 | 5 = 0;
   for (let round = 1; round <= policies[input.arm].rounds; round++) {
     const started = Date.now();
-    const request: ProviderRequest = { context: { subjectId: input.subjectId, arm: input.arm, round, slot: 1 }, model: input.model,
+    const request: ProviderRequest = { context: { runId: input.runId, subjectId: input.subjectId, arm: input.arm, repeat: input.repeat, round, slot: 1 }, model: input.model,
       maxOutputTokens: input.maxOutputTokens, prompt: buildPrompt(buildRoundPromptInputs({ ...input, round, state })) };
     try {
       const before = await deps.snapshotProtected();
@@ -278,7 +278,7 @@ export async function runExperiment(options: ExperimentOptions): Promise<RunReco
             if (result.kind === "feedback-mutant" && result.mutantStatus === "Killed") killed.add(result.mutantKey);
           state = { ...state, killedFeedbackKeys: [...killed] };
         }
-        const result = await runModelCell({ subjectId: task.subjectId, arm: task.arm, repeat: task.repeat, source, seed: manifest.seed,
+        const result = await runModelCell({ runId, subjectId: task.subjectId, arm: task.arm, repeat: task.repeat, source, seed: manifest.seed,
           model: options.model, maxOutputTokens: options.maxOutputTokens, initialState: state,
           feedbackMutants: inventory.mutants.filter((m) => inventory.partition.feedback.includes(m.key)) },
         { executor: feedback, staging, snapshotProtected: snapshot, now, provider: options.provider, ...(options.onPrompt ? { onPrompt: options.onPrompt } : {}) });
@@ -303,6 +303,25 @@ export async function runExperiment(options: ExperimentOptions): Promise<RunReco
         message: "provider usage unavailable; token totals include only reported usage and USD includes conservative reservations", at: now(), rolledBack: [] }));
       if (exitCode === 0) exitCode = 5;
     }
+    // Observe final-suite coverage for every arm, independently of its admission policy.
+    // This is feedback/pristine instrumentation only: no scoring, traps or twin are exposed.
+    const finalCoverage: ReturnType<typeof LoopExecutionResultSchema.parse>[] = [];
+    if (!errors.length && !budgetBlocked) {
+      try {
+        const results = await feedback.execute({ kind: "coverage", units: state.keptUnits });
+        const measured = results[0];
+        if (results.length !== 1 || measured?.kind !== "coverage" || measured.outcome !== "passed" ||
+          measured.executableLines === undefined) throw new Error("final coverage unavailable");
+        finalCoverage.push(measured);
+        assertProtectedUnchanged(before, await snapshot());
+      } catch {
+        errors.push(RunErrorSchema.parse({ type: "run-error", kind: "report-parse", fatal: false, subjectId: task.subjectId,
+          arm: task.arm, repeat: task.repeat, round: null, candidateId: null,
+          message: "final frozen-suite coverage unavailable; no coverage percentage inferred", at: now(), rolledBack: [] }));
+        if (exitCode === 0) exitCode = 5;
+      }
+    }
+    const loopExecutions = [...rounds.flatMap((r) => r.executions), ...finalCoverage];
     const cell: RunCell = RunCellSchema.parse({ subjectId: task.subjectId, arm: task.arm, repeat: task.repeat,
       state: budgetBlocked ? "missing" : errors.length ? "error" : "complete", reason: budgetBlocked ? "budget cap" : errors.length ? "cell run error" : null,
       rounds: rounds.length, keptUnits: state.keptUnits.map((u) => u.unitSha256), roundWallMs,
@@ -316,7 +335,7 @@ export async function runExperiment(options: ExperimentOptions): Promise<RunReco
     await writeNewJson(options.root, `${modeRoot}/frozen/${runId}/${task.subjectId}-${task.arm}-${task.repeat}.json`, frozen);
     await writeNewJson(options.root, `${modeRoot}/loops/${runId}/${task.subjectId}-${task.arm}-${task.repeat}.json`, CellArtifactSchema.parse({
       schemaVersion: 1, cell, candidates: rounds.flatMap((r) => r.candidates), units: uniqueUnits([...state.keptUnits, ...rounds.flatMap((r) => r.units)]),
-      gateDecisions: rounds.flatMap((r) => r.gateDecisions), runErrors: errors, loopExecutions: rounds.flatMap((r) => r.executions), frozen }));
+      gateDecisions: rounds.flatMap((r) => r.gateDecisions), runErrors: errors, loopExecutions, frozen }));
     if (!errors.length && !budgetBlocked) {
       try {
         const score = await scoreFrozenCell({ frozen, inventory, source, twin: await readFile(path.join(options.root, "fixtures/subjects", task.subjectId, "twin.ts"), "utf8"), traps, run: options.run, now });
@@ -330,7 +349,7 @@ export async function runExperiment(options: ExperimentOptions): Promise<RunReco
     }
     const artifact = CellArtifactSchema.parse({ schemaVersion: 1, cell, candidates: rounds.flatMap((r) => r.candidates),
       units: uniqueUnits([...state.keptUnits, ...rounds.flatMap((r) => r.units)]), gateDecisions: rounds.flatMap((r) => r.gateDecisions),
-      runErrors: errors, loopExecutions: rounds.flatMap((r) => r.executions), frozen });
+      runErrors: errors, loopExecutions, frozen });
     artifacts.push(artifact);
     const relative = `${modeRoot}/cells/${runId}/${task.subjectId}-${task.arm}-${task.repeat}.json`;
     await writeNewJson(options.root, relative, artifact);
