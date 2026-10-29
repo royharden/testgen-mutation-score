@@ -23,3 +23,12 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# Local credentials, keys and packaged artifacts
+.creds/
+ArchiveManager-creds.txt
+*.pem
+*.key
+*.p12
+*.pfx
+*.zip

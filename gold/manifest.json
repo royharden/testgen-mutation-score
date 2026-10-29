@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "edition": 1,
+  "splitMethod": "designed-stratified",
+  "splitRationale": "PLAN D10 spec deviation: the spec asks for a seeded-hash subject split, but edition 1 must guarantee that each of the nine planted traps sits in at least one subject per split and that the replay subjects clamp-range, stable-sort and validated-number are dev subjects; a post-hoc hash cannot guarantee either, and no hash can be computed during Dirty Mode construction. Subjects are therefore authored as 12 trap-matched pairs (identical scored trap sets, different domains), one member per split, so the held-out set is neither easier nor harder by design. The seed below drives only the mutant feedback/scoring split and the bootstrap; split.ts keeps seededSubjectSplit/seededPairedSubjectSplit for a future seeded edition. freezeDate is a placeholder until activation (D13: subjects, hand suites and twins freeze before the first inventory; any later change is edition 2).",
+  "seed": 20261024,
+  "freezeDate": "pending",
+  "dev": [
+    { "id": "clamp-range", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "stable-sort", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "validated-number", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "word-wrap", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "money-format", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "ring-buffer", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "order-state", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "csv-fields", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "histogram-bins", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "leaderboard-rank", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "roman-numerals", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "semver-compare", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } }
+  ],
+  "heldout": [
+    { "id": "percent-scale", "partner": "clamp-range", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "multi-key-sort", "partner": "stable-sort", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "parse-duration", "partner": "validated-number", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "text-columns", "partner": "word-wrap", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "tax-invoice", "partner": "money-format", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "lru-cache", "partner": "ring-buffer", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "door-lock-fsm", "partner": "order-state", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "query-string", "partner": "csv-fields", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "moving-average", "partner": "histogram-bins", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "tournament-seeding", "partner": "leaderboard-rank", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "base-convert", "partner": "roman-numerals", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } },
+    { "id": "date-range-sort", "partner": "semver-compare", "sha256": { "src": "pending", "hand": "pending", "twin": "pending", "traps": "pending" } }
+  ]
+}

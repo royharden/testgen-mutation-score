@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "query-string",
+  "traps": [
+    {
+      "id": "infinite-percent-scan",
+      "trap": "infinite-loop",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 28,
+          "column": 7
+        },
+        "end": {
+          "line": 28,
+          "column": 18
+        }
+      },
+      "original": "cursor += 3",
+      "replacement": "cursor += 0",
+      "label": "killable",
+      "expectedStatus": "Timeout",
+      "note": "A valid percent escape stalls the numeric scanner; its repeating path only reads character codes and performs numeric checks/arithmetic. Hand input a+b=c%20d enters it; intended result is Timeout."
+    },
+    {
+      "id": "quirk-bare-key",
+      "trap": "quirk-trap",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 47,
+          "column": 7
+        },
+        "end": {
+          "line": 47,
+          "column": 41
+        }
+      },
+      "original": "pairs.push([decode(segment), \"\"]);",
+      "replacement": "",
+      "label": "contract-silent",
+      "note": "parseQuery(\"bare\") retains an empty-valued pair in src.ts but discards the segment with this mutant and in twin.ts. Segments without equals are explicitly unspecified."
+    },
+    {
+      "id": "canary-paircount-zero",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 60,
+          "column": 3
+        },
+        "end": {
+          "line": 60,
+          "column": 34
+        }
+      },
+      "original": "return parseQuery(text).length;",
+      "replacement": "return 0;",
+      "label": "killable",
+      "note": "Disposable canary: pairCount is always zero; the hand suite expects 2 for a=1&&b=2&."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "response": {
+    "testFile": "import { expect, test } from \"vitest\";\nimport { isValidNumber, parseNumber, parseNumberList } from \"./src\";\n\ntest(\"parseNumber reads signed integers and decimals after trimming\", () => {\n  expect(parseNumber(\" -12 \")).toBe(-12);\n  expect(parseNumber(\"+3.5\")).toBe(3.5);\n  expect(parseNumber(\"0.25\")).toBe(0.25);\n});\n\ntest(\"parseNumber rejects text that is not a plain decimal number\", () => {\n  for (const bad of [\"\", \"1e3\", \"12abc\", \"1,000\", \".5\", \"5.\", \"--1\"]) {\n    expect(() => parseNumber(bad)).toThrow();\n  }\n});\n\ntest(\"the integer option rejects a fraction part\", () => {\n  expect(parseNumber(\"7\", { integer: true })).toBe(7);\n  expect(() => parseNumber(\"2.5\", { integer: true })).toThrow();\n});\n\ntest(\"the decimals option rounds to the requested places\", () => {\n  expect(parseNumber(\"3.14159\", { decimals: 2 })).toBe(3.14);\n  expect(parseNumber(\"2.5\", { decimals: 0 })).toBe(3);\n  expect(() => parseNumber(\"1\", { decimals: 11 })).toThrow();\n});\n\ntest(\"min and max bounds reject values outside them\", () => {\n  expect(parseNumber(\"10\", { max: 10 })).toBe(10);\n  expect(() => parseNumber(\"11\", { max: 10 })).toThrow();\n  expect(() => parseNumber(\"-1\", { min: 0 })).toThrow();\n  expect(parseNumber(\"4\", { min: 0, max: 10 })).toBe(4);\n});\n\ntest(\"isValidNumber reports whether parseNumber would succeed\", () => {\n  expect(isValidNumber(\"42\")).toBe(true);\n  expect(isValidNumber(\"forty-two\")).toBe(false);\n  expect(isValidNumber(\"42\", { max: 40 })).toBe(false);\n});\n\ntest(\"parseNumberList parses comma-separated items and treats blank text as empty\", () => {\n  expect(parseNumberList(\"1, 2.5 ,-3\")).toEqual([1, 2.5, -3]);\n  expect(parseNumberList(\"   \")).toEqual([]);\n  expect(() => parseNumberList(\"1,,2\")).toThrow();\n});\n"
+  },
+  "kind": "duplicate-kill",
+  "probabilistic": false,
+  "promptSha256": "pending",
+  "arm": "A6",
+  "slot": 1,
+  "subjectId": "validated-number",
+  "expected": [
+    {
+      "testName": "parseNumber reads signed integers and decimals after trimming",
+      "subReason": "duplicate-unit",
+      "code": "no-new-kill",
+      "decision": "rejected"
+    }
+  ],
+  "expectTwinFailure": false,
+  "schemaVersion": 1,
+  "round": 2,
+  "note": "A6-only exact replay of its frozen hand starting suite (within the shared 8-test cap). Every byte-identical unit is already kept, so no feedback or coverage can be newly earned."
+}

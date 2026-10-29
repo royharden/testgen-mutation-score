@@ -23,6 +23,8 @@ import {
   SubjectManifestSchema,
   TrapSchema,
   TrapsFileSchema,
+  isSubjectRelFile,
+  normalizeRelPath,
   utf8ByteLength,
 } from "../../cli/core/schemas.js";
 import {
@@ -310,6 +312,43 @@ describe("other contracts", () => {
     expect(TrapSchema.safeParse({ ...trap, trap: "not-a-trap" }).success).toBe(false);
   });
 
+  it("allows 'equivalent' only for equivalent-loop-bound (always) and dead-flag-branch (optionally)", () => {
+    const base = {
+      id: "t1",
+      file: "src.ts",
+      range: { start: { line: 3, column: 5 }, end: { line: 3, column: 9 } },
+      original: "a > b",
+      replacement: "a >= b",
+    };
+    const parse = (trap: string, label: string) => TrapSchema.safeParse({ ...base, trap, label }).success;
+    expect(parse("equivalent-loop-bound", "equivalent")).toBe(true);
+    expect(parse("equivalent-loop-bound", "killable")).toBe(false);
+    expect(parse("dead-flag-branch", "equivalent")).toBe(true); // mutation inside a constant-false branch
+    expect(parse("dead-flag-branch", "killable")).toBe(true); // flipping the flag itself
+    expect(parse("boundary-off-by-one", "equivalent")).toBe(false);
+    expect(parse("quirk-trap", "equivalent")).toBe(false);
+    expect(parse("canary", "equivalent")).toBe(false);
+  });
+
+  it("pins trap files to the subject-relative convention", () => {
+    const trap = {
+      id: "t1",
+      trap: "boundary-off-by-one",
+      file: "src.ts",
+      range: { start: { line: 3, column: 5 }, end: { line: 3, column: 9 } },
+      original: "a > b",
+      replacement: "a >= b",
+      label: "killable",
+    };
+    expect(TrapSchema.safeParse(trap).success).toBe(true);
+    expect(TrapSchema.safeParse({ ...trap, file: "fixtures/subjects/clamp-range/src.ts" }).success).toBe(false);
+    expect(TrapSchema.safeParse({ ...trap, file: "./src.ts" }).success).toBe(false);
+    expect(TrapSchema.safeParse({ ...trap, file: "C:\\src.ts" }).success).toBe(false);
+    expect(isSubjectRelFile("src.ts")).toBe(true);
+    expect(normalizeRelPath(".\\src.ts")).toBe("src.ts");
+    expect(normalizeRelPath("../src.ts")).toBeNull();
+  });
+
   it("requires exactly one canary and at most three scored traps per subject", () => {
     const t = (id: string, trap: string, label = "killable") => ({
       id,
@@ -378,6 +417,8 @@ describe("other contracts", () => {
       schemaVersion: 1,
       event: "reserved",
       callId: "call-1",
+      runId: "ledger-schema-test",
+      repeat: 0,
       at: AT,
       provider: "anthropic",
       model: "pinned-model",
@@ -394,6 +435,10 @@ describe("other contracts", () => {
       reason: null,
     };
     expect(LedgerEntrySchema.safeParse(l).success).toBe(true);
+    expect(LedgerEntrySchema.safeParse({ ...l, runId: undefined }).success).toBe(false);
+    expect(LedgerEntrySchema.safeParse({ ...l, repeat: undefined }).success).toBe(false);
+    expect(LedgerEntrySchema.safeParse({ ...l, subjectId: null }).success).toBe(false);
+    expect(LedgerEntrySchema.safeParse({ ...l, repeat: -1 }).success).toBe(false);
     expect(LedgerEntrySchema.safeParse({ ...l, reservedUsd: null }).success).toBe(false);
     expect(LedgerEntrySchema.safeParse({ ...l, event: "blocked", reservedUsd: null }).success).toBe(false);
     expect(LedgerEntrySchema.safeParse({ ...l, event: "blocked", reservedUsd: null, reason: "unknown price" }).success).toBe(true);

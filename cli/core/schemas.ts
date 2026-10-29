@@ -64,6 +64,36 @@ export function isSafeRelPath(p: string): boolean {
 }
 export const RelPathSchema = z.string().max(512).refine(isSafeRelPath, "expected a safe relative POSIX path");
 
+/**
+ * Normalise an engine- or author-supplied path to relative POSIX form: backslashes become `/` and leading
+ * `./` segments are removed. Returns null when the result is not a safe relative path (see isSafeRelPath).
+ * Pure; mutantKey.ts wraps it in a throwing variant (normalizeRelFile).
+ */
+export function normalizeRelPath(p: string): string | null {
+  let out = p.replace(/\\/g, "/");
+  while (out.startsWith("./")) out = out.slice(2);
+  return isSafeRelPath(out) ? out : null;
+}
+
+/**
+ * FILE-PATH CONVENTION (pinned in M2): a trap's `file` and a mutant's `relFile` are SUBJECT-RELATIVE, i.e.
+ * relative to `fixtures/subjects/<id>/` — in practice always `src.ts` (subjects are single, import-free
+ * files). Never repo-relative (`fixtures/subjects/<id>/src.ts`) and never absolute. Because subjects have no
+ * sub-directories, a subject-relative file is a bare file name: a safe relative path with no `/`.
+ */
+export function isSubjectRelFile(p: string): boolean {
+  return isSafeRelPath(p) && !p.includes("/");
+}
+export const SubjectRelFileSchema = z
+  .string()
+  .max(128)
+  .refine(isSubjectRelFile, "expected a subject-relative file name such as src.ts (not a repo-relative path)");
+
+/** The one specifier by which hand suites and candidates import the subject (PLAN §2.2 gate step 2). */
+export const CANONICAL_SUBJECT_SPECIFIER = "./src" as const;
+/** The subject file every trap and generated mutant refers to (subject-relative). */
+export const SUBJECT_SOURCE_FILE = "src.ts" as const;
+
 /** UTF-8 byte length without TextEncoder, so this module stays dependency- and platform-free. */
 export function utf8ByteLength(s: string): number {
   let bytes = 0;
@@ -225,11 +255,22 @@ export const TrapKindSchema = z.enum(TRAP_KINDS);
 export const TrapLabelSchema = z.enum(["killable", "equivalent", "contract-silent"]);
 export const MAX_SCORED_TRAPS_PER_SUBJECT = 3;
 
+/** Trap kinds whose planted mutant may be labelled `equivalent` (it cannot change behaviour). */
+export const EQUIVALENT_CAPABLE_TRAPS = ["equivalent-loop-bound", "dead-flag-branch"] as const;
+
+/**
+ * One planted mutant. `file` is subject-relative (see isSubjectRelFile). `range` uses 1-based lines and
+ * columns (UTF-16 code units) with an EXCLUSIVE end column, as in mutation-testing-report-schema: for a
+ * single-line range, `original === lineText.slice(start.column - 1, end.column - 1)`.
+ * Labels: `equivalent-loop-bound` is always `equivalent`; `dead-flag-branch` may be `equivalent` (a mutation
+ * inside a branch guarded by a constant-false flag) or `killable` (flipping the flag itself); no other trap
+ * may be `equivalent`.
+ */
 export const TrapSchema = z
   .strictObject({
     id: z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/, "expected a lowercase trap id"),
     trap: TrapKindSchema,
-    file: RelPathSchema,
+    file: SubjectRelFileSchema,
     range: SourceRangeSchema,
     /** Exact original text at `range`; patchrun verifies it before replacing. */
     original: z.string().min(1),
@@ -246,8 +287,10 @@ export const TrapSchema = z
       issue("infinite-loop must declare expectedStatus: Timeout", "expectedStatus");
     if (t.trap !== "infinite-loop" && t.expectedStatus !== undefined)
       issue("only infinite-loop declares expectedStatus", "expectedStatus");
-    if ((t.trap === "equivalent-loop-bound") !== (t.label === "equivalent"))
-      issue("label 'equivalent' is used by, and only by, equivalent-loop-bound", "label");
+    if (t.trap === "equivalent-loop-bound" && t.label !== "equivalent")
+      issue("equivalent-loop-bound must be labelled equivalent", "label");
+    if (t.label === "equivalent" && !(EQUIVALENT_CAPABLE_TRAPS as readonly string[]).includes(t.trap))
+      issue("label 'equivalent' is only for equivalent-loop-bound and dead-flag-branch", "label");
     if ((t.trap === "message-only" || t.trap === "exception-type-only") && t.label !== "contract-silent")
       issue(`${t.trap} must be labelled contract-silent`, "label");
     if (t.trap === "canary" && t.label !== "killable") issue("the canary is an obvious killable change", "label");
@@ -349,9 +392,12 @@ export type Subject = z.infer<typeof SubjectSchema>;
 
 const NoPipe = (s: string) => !s.includes("|");
 
-/** Exactly the inputs of the mutant key; there is deliberately no ordinal/engine id field. */
+/**
+ * Exactly the inputs of the mutant key; there is deliberately no ordinal/engine id field.
+ * `relFile` is subject-relative (isSubjectRelFile), the same convention as Trap.file.
+ */
 export const MutantKeyInputSchema = z.strictObject({
-  relFile: RelPathSchema.refine(NoPipe, "relFile may not contain '|'"),
+  relFile: SubjectRelFileSchema.refine(NoPipe, "relFile may not contain '|'"),
   srcSha256: Sha256HexSchema,
   range: SourceRangeSchema,
   mutator: z.string().min(1).max(128).refine(NoPipe, "mutator may not contain '|'"),
@@ -361,7 +407,8 @@ export type MutantKeyInput = z.infer<typeof MutantKeyInputSchema>;
 
 export const MutantRecordSchema = z.strictObject({
   key: Sha256HexSchema,
-  relFile: RelPathSchema,
+  /** Subject-relative (isSubjectRelFile). */
+  relFile: SubjectRelFileSchema,
   srcSha256: Sha256HexSchema,
   range: SourceRangeSchema,
   mutator: z.string().min(1).max(128),
@@ -471,6 +518,20 @@ const executionBase = {
   outputTruncated: z.boolean(),
 };
 
+/** JSON strings keep captured prototype keys and text out of executable source. */
+export const A1ProbeSchema = z.strictObject({
+  id: z.string().regex(/^[a-z][a-zA-Z0-9_-]{0,79}$/),
+  exportName: z.string().regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/),
+  argsJson: z.string().max(16384),
+});
+export const A1ObservationSchema = z.strictObject({
+  probeId: z.string().min(1), outcome: z.enum(["return", "throw", "unsupported"]),
+  valueJson: z.string().max(16384).nullable(), errorName: z.string().max(200).nullable(),
+  message: z.string().max(1000).nullable(),
+});
+export type A1Probe = z.infer<typeof A1ProbeSchema>;
+export type A1Observation = z.infer<typeof A1ObservationSchema>;
+
 const mutantOutcome = {
   mutantKey: Sha256HexSchema,
   mutantStatus: MutantStatusSchema,
@@ -492,8 +553,15 @@ export const LoopExecutionResultSchema = z
     z.strictObject({ kind: z.literal("pristine"), attempt: z.union([z.literal(1), z.literal(2)]), ...executionBase }),
     z.strictObject({ kind: z.literal("pristine-union"), ...executionBase }),
     z.strictObject({ kind: z.literal("feedback-mutant"), ...executionBase, ...mutantOutcome }),
-    z.strictObject({ kind: z.literal("coverage"), coveredLines: z.array(z.number().int().min(1)), ...executionBase }),
-    z.strictObject({ kind: z.literal("a1-capture"), ...executionBase }),
+    z.strictObject({ kind: z.literal("coverage"), coveredLines: z.array(z.number().int().min(1)),
+      /** Actual instrumented executable lines. Optional only for legacy/constructed evidence. */
+      executableLines: z.array(z.number().int().min(1)).optional(), ...executionBase }).superRefine((r, ctx) => {
+        if (new Set(r.coveredLines).size !== r.coveredLines.length ||
+          (r.executableLines !== undefined && (new Set(r.executableLines).size !== r.executableLines.length ||
+            r.coveredLines.some((line) => !r.executableLines!.includes(line)))))
+          ctx.addIssue({ code: "custom", message: "coverage lines must be unique and covered lines executable" });
+      }),
+    z.strictObject({ kind: z.literal("a1-capture"), observations: z.array(A1ObservationSchema).max(64), ...executionBase }),
   ])
   .refine(killCauseConsistent, { message: KILL_CAUSE_MESSAGE, path: ["killCause"] });
 export type LoopExecutionResult = z.infer<typeof LoopExecutionResultSchema>;
@@ -650,6 +718,9 @@ export const RunRecordSchema = z
   });
 export type RunRecord = z.infer<typeof RunRecordSchema>;
 
+/** Public run catalog. Entries derive their URL from the safe run id, never a caller path. */
+export const RunIndexSchema = z.strictObject({ schemaVersion, runs: z.array(RunIdSchema) });
+
 /** Scorer-owned record, written only after the subject × arm × repeat suite is immutable. The loop never reads it. */
 export const ScoringRecordSchema = z.strictObject({
   schemaVersion,
@@ -721,6 +792,63 @@ export const EvalRowSchema = z
   });
 export type EvalRow = z.infer<typeof EvalRowSchema>;
 
+/** Post-freeze public companion. Never read by prompts, gate or generation. No paths, transport or environment fields. */
+export const PublicAnalysisSchema = z.strictObject({
+  schemaVersion,
+  runId: RunIdSchema,
+  campaignId: RunIdSchema.nullable(),
+  split: SplitSchema,
+  providerMode: ProviderModeSchema,
+  executionProvenance: ExecutionProvenanceSchema,
+  sandboxQualified: z.boolean(),
+  manifestEdition: z.number().int().min(1),
+  seed: SeedSchema,
+  inventories: z.array(z.strictObject({
+    subjectId: SlugSchema, srcSha256: Sha256HexSchema,
+    engine: EngineSchema, compileErrorCount: NonNegInt,
+    mutants: z.array(z.strictObject({ key: Sha256HexSchema, range: SourceRangeSchema,
+      partition: PartitionSchema, source: MutantSourceSchema })),
+    planted: z.array(z.strictObject({ trapId: SlugSchema, trap: NamedTrapSchema, label: TrapLabelSchema, range: SourceRangeSchema })),
+  })),
+  cells: z.array(z.strictObject({ subjectId: SlugSchema, arm: ArmIdSchema, repeat: NonNegInt,
+    state: z.enum(["complete", "incomplete"]),
+    issues: z.array(z.enum(["missing-artifact", "invalid-artifact", "incomplete-measurement"])),
+    accounting: z.strictObject({ inputTokens: NonNegInt, outputTokens: NonNegInt, usd: NonNegNumber.nullable(), runErrors: NonNegInt }),
+    row: EvalRowSchema.nullable(),
+    /** A6 generated top-up only; row.overfit is the combined hand + top-up suite. */
+    topUpOverfit: z.strictObject({ accepted: NonNegInt, failingTwin: NonNegInt, twinIncomplete: NonNegInt, rate: Fraction }).nullable(),
+    matrix: z.array(z.strictObject({ kind: z.enum(["feedback", "scoring", "planted"]),
+      mutantKey: Sha256HexSchema.nullable(), trapId: SlugSchema.nullable(),
+      unitSha256s: z.array(Sha256HexSchema), status: MutantStatusSchema })),
+    twinFailures: z.array(Sha256HexSchema),
+  })),
+}).superRefine((a, ctx) => {
+  if (a.providerMode === "mock" && a.executionProvenance === "measured")
+    ctx.addIssue({ code: "custom", message: "mock analysis cannot be measured" });
+  const ids = new Set(a.inventories.map((i) => i.subjectId));
+  if (ids.size !== a.inventories.length) ctx.addIssue({ code: "custom", message: "duplicate inventory" });
+  const cells = new Set<string>();
+  for (const c of a.cells) {
+    const key = `${c.subjectId}/${c.arm}/${c.repeat}`;
+    if (cells.has(key)) ctx.addIssue({ code: "custom", message: "duplicate analysis cell" });
+    cells.add(key);
+    if (c.state === "complete" && (c.row === null || c.issues.length > 0)) ctx.addIssue({ code: "custom", message: "complete analysis needs an observed row without issues" });
+    if (c.row && (c.row.subjectId !== c.subjectId || c.row.arm !== c.arm || c.row.repeat !== c.repeat ||
+      c.row.providerMode !== a.providerMode || c.row.executionProvenance !== a.executionProvenance ||
+      c.row.campaignId !== a.campaignId || c.row.split !== a.split || !ids.has(c.subjectId)))
+      ctx.addIssue({ code: "custom", message: "analysis row identity mismatch" });
+    const inventory = a.inventories.find((i) => i.subjectId === c.subjectId);
+    for (const m of c.matrix) {
+      if ((m.kind === "planted") !== (m.trapId !== null) || (m.kind !== "planted") !== (m.mutantKey !== null))
+        ctx.addIssue({ code: "custom", message: "matrix target identity mismatch" });
+      if (m.kind === "planted" ? !inventory?.planted.some((t) => t.trapId === m.trapId) :
+        !inventory?.mutants.some((m2) => m2.key === m.mutantKey && m2.partition === m.kind))
+        ctx.addIssue({ code: "custom", message: "matrix target absent from its inventory partition" });
+    }
+  }
+});
+export type PublicAnalysis = z.infer<typeof PublicAnalysisSchema>;
+
 // ---------------------------------------------------------------------------------------------------------
 // Rulings (approvals) — PLAN §2.7
 // ---------------------------------------------------------------------------------------------------------
@@ -751,15 +879,18 @@ export const LedgerEntrySchema = z
     schemaVersion,
     event: z.enum(LEDGER_EVENTS),
     callId: IdSchema,
+    /** Exact owning run/cell. Missing legacy provenance is invalid, never inferred from cached USD. */
+    runId: RunIdSchema,
+    repeat: NonNegInt,
     at: IsoTimestampSchema,
     provider: ProviderModeSchema,
     model: z.string().min(1),
     /** Date of the price table row used; null when the price is unknown (which blocks live calls). */
     priceTableDate: IsoDateSchema.nullable(),
     budgetScope: SplitSchema,
-    subjectId: SlugSchema.nullable(),
-    arm: ModelArmIdSchema.nullable(),
-    round: NonNegInt.nullable(),
+    subjectId: SlugSchema,
+    arm: ModelArmIdSchema,
+    round: z.number().int().min(1),
     /** 0 for the first attempt; each explicit retry is reserved separately. */
     attempt: NonNegInt,
     reservedUsd: NonNegNumber.nullable(),

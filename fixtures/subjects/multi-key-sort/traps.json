@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "multi-key-sort",
+  "traps": [
+    {
+      "id": "stability-equal-vectors",
+      "trap": "sort-stability",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 39,
+          "column": 22
+        },
+        "end": {
+          "line": 39,
+          "column": 66
+        }
+      },
+      "original": "compare(rows[order[at - 1]!]!, rows[i]!) > 0",
+      "replacement": "compare(rows[order[at - 1]!]!, rows[i]!) >= 0",
+      "label": "killable",
+      "note": "Two objects with identical vectors reverse order; witness [{id:\"a\",k:1},{id:\"b\",k:1}] with key x=>x.k. The hand suite uses distinct vectors."
+    },
+    {
+      "id": "eqloop-row-count",
+      "trap": "equivalent-loop-bound",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 37,
+          "column": 19
+        },
+        "end": {
+          "line": 37,
+          "column": 24
+        }
+      },
+      "original": "i < n",
+      "replacement": "i !== n",
+      "label": "equivalent",
+      "note": "n is a fixed nonnegative array length; i starts at zero and increments by one until n."
+    },
+    {
+      "id": "exctype-nonfinite-key",
+      "trap": "exception-type-only",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 20,
+          "column": 34
+        },
+        "end": {
+          "line": 20,
+          "column": 82
+        }
+      },
+      "original": "throw new TypeError(\"nonfinite multi-key value\")",
+      "replacement": "throw new Error(\"nonfinite multi-key value\")",
+      "label": "contract-silent",
+      "note": "Only the error class changes; invalid keys must throw but their class is unspecified."
+    },
+    {
+      "id": "canary-sorted-result",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 53,
+          "column": 3
+        },
+        "end": {
+          "line": 53,
+          "column": 15
+        }
+      },
+      "original": "return true;",
+      "replacement": "return false;",
+      "label": "killable",
+      "note": "The hand suite asserts isSortedByKeys([], []) is true, killing this canary."
+    }
+  ]
+}

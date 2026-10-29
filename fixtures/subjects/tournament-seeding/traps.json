@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "tournament-seeding",
+  "traps": [
+    {
+      "id": "stability-reverse-ties",
+      "trap": "sort-stability",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 30,
+          "column": 63
+        },
+        "end": {
+          "line": 30,
+          "column": 80
+        }
+      },
+      "original": "a.index - b.index",
+      "replacement": "b.index - a.index",
+      "label": "killable",
+      "note": "Equal-rated players reverse input order. Witness a and b both rated 20 swap seeds; the hand suite checks their ratings only."
+    },
+    {
+      "id": "boundary-qualification",
+      "trap": "boundary-off-by-one",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 36,
+          "column": 50
+        },
+        "end": {
+          "line": 36,
+          "column": 71
+        }
+      },
+      "original": "player.seed <= cutoff",
+      "replacement": "player.seed < cutoff",
+      "label": "killable",
+      "note": "Excludes the exact cutoff seed; the hand suite expects both a and b when cutoff is 2."
+    },
+    {
+      "id": "canary-bracket-zero",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 58,
+          "column": 3
+        },
+        "end": {
+          "line": 58,
+          "column": 15
+        }
+      },
+      "original": "return size;",
+      "replacement": "return 0;",
+      "label": "killable",
+      "note": "Disposable canary: nextBracketSize always returns zero; the hand suite expects 8 for count 5."
+    }
+  ]
+}

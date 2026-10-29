@@ -1,0 +1,23 @@
+{
+  "response": {
+    "testFile": "import { test, expect } from \"vitest\";\nimport { clamp, clampAll, rangeFraction } from \"./src\";\ntest(\"broken syntax\", () => { expect(clamp(3, 0, 5)).toBe(3);"
+  },
+  "kind": "syntax",
+  "probabilistic": false,
+  "promptSha256": "pending",
+  "arm": "A3",
+  "slot": 1,
+  "subjectId": "clamp-range",
+  "expected": [
+    {
+      "decision": "rejected",
+      "subReason": "parse-error",
+      "code": "syntax",
+      "testName": null
+    }
+  ],
+  "expectTwinFailure": false,
+  "schemaVersion": 1,
+  "round": 1,
+  "note": "Designed fixture, not measured. Outcomes depend on the frozen feedback inventory; replay:check binds the actual controller prompt and never invents execution evidence."
+}

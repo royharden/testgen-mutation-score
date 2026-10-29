@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "csv-fields",
+  "traps": [
+    {
+      "id": "infinite-escaped-quote",
+      "trap": "infinite-loop",
+      "file": "src.ts",
+      "range": { "start": { "line": 32, "column": 7 }, "end": { "line": 32, "column": 13 } },
+      "original": "i += 2",
+      "replacement": "i += 0",
+      "label": "killable",
+      "expectedStatus": "Timeout",
+      "note": "The closing-quote scan stops advancing at a doubled quote and spins without allocating; the hand test with '\"say \"\"hi\"\"\",x' hangs. Must end as Timeout."
+    },
+    {
+      "id": "quirk-text-after-quote",
+      "trap": "quirk-trap",
+      "file": "src.ts",
+      "range": { "start": { "line": 53, "column": 7 }, "end": { "line": 53, "column": 43 } },
+      "original": "field += line.slice(close + 1, end);",
+      "replacement": "field += \"\";",
+      "label": "contract-silent",
+      "note": "parseCsvLine('\"ab\"cd,e') is ['abcd', 'e'] in src.ts but ['ab', 'e'] with the mutant and in twin.ts; the CONTRACT does not specify text after a closing quote."
+    },
+    {
+      "id": "canary-fieldcount-zero",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": { "start": { "line": 76, "column": 3 }, "end": { "line": 76, "column": 47 } },
+      "original": "return parseCsvLine(line, delimiter).length;",
+      "replacement": "return 0;",
+      "label": "killable",
+      "note": "Disposable canary: fieldCount is always 0; the hand suite asserts 3."
+    }
+  ]
+}

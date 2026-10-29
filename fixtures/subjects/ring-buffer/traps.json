@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "ring-buffer",
+  "traps": [
+    {
+      "id": "boundary-at-size",
+      "trap": "boundary-off-by-one",
+      "file": "src.ts",
+      "range": { "start": { "line": 71, "column": 50 }, "end": { "line": 71, "column": 69 } },
+      "original": "index >= this.count",
+      "replacement": "index > this.count",
+      "label": "killable",
+      "note": "at(size) no longer throws and returns a stale or empty slot; witness: two items, at(2). The hand suite only probes at(-1) and at(1.5)."
+    },
+    {
+      "id": "deadflag-debug-overflow",
+      "trap": "dead-flag-branch",
+      "file": "src.ts",
+      "range": { "start": { "line": 52, "column": 11 }, "end": { "line": 52, "column": 37 } },
+      "original": "this.count > this.capacity",
+      "replacement": "this.count >= this.capacity",
+      "label": "equivalent",
+      "note": "Inside if (DEBUG_CHECKS) where the flag is the constant false, so the check never runs."
+    },
+    {
+      "id": "exctype-capacity",
+      "trap": "exception-type-only",
+      "file": "src.ts",
+      "range": { "start": { "line": 30, "column": 7 }, "end": { "line": 30, "column": 27 } },
+      "original": "throw new TypeError(",
+      "replacement": "throw new Error(",
+      "label": "contract-silent",
+      "note": "Only the constructor's error class changes; the CONTRACT leaves it unspecified."
+    },
+    {
+      "id": "canary-size-zero",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": { "start": { "line": 37, "column": 5 }, "end": { "line": 37, "column": 23 } },
+      "original": "return this.count;",
+      "replacement": "return 0;",
+      "label": "killable",
+      "note": "Disposable canary: size is always 0; the hand suite asserts size 2."
+    }
+  ]
+}

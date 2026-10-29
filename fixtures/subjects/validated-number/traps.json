@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "validated-number",
+  "traps": [
+    {
+      "id": "exctype-malformed",
+      "trap": "exception-type-only",
+      "file": "src.ts",
+      "range": { "start": { "line": 40, "column": 5 }, "end": { "line": 40, "column": 48 } },
+      "original": "throw new SyntaxError(`not a decimal number",
+      "replacement": "throw new Error(`not a decimal number",
+      "label": "contract-silent",
+      "note": "Malformed text throws Error instead of SyntaxError; the CONTRACT leaves the class unspecified."
+    },
+    {
+      "id": "float-negative-half",
+      "trap": "float-rounding",
+      "file": "src.ts",
+      "range": { "start": { "line": 34, "column": 11 }, "end": { "line": 34, "column": 66 } },
+      "original": "Math.sign(value) * Math.round(Math.abs(value) * factor)",
+      "replacement": "Math.round(value * factor)",
+      "label": "killable",
+      "note": "Same result except for exact negative halves; witness parseNumber('-2.5', { decimals: 0 }) is -3 in src.ts and -2 with the mutant. The hand suite rounds positive values only."
+    },
+    {
+      "id": "boundary-min-inclusive",
+      "trap": "boundary-off-by-one",
+      "file": "src.ts",
+      "range": { "start": { "line": 49, "column": 36 }, "end": { "line": 49, "column": 56 } },
+      "original": "result < options.min",
+      "replacement": "result <= options.min",
+      "label": "killable",
+      "note": "A value equal to min is rejected; witness parseNumber('0', { min: 0 }). The hand suite tests the max bound exactly but not the min bound."
+    },
+    {
+      "id": "canary-valid-false",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": { "start": { "line": 61, "column": 5 }, "end": { "line": 61, "column": 17 } },
+      "original": "return true;",
+      "replacement": "return false;",
+      "label": "killable",
+      "note": "Disposable canary: isValidNumber is never true; the hand suite asserts isValidNumber('42')."
+    }
+  ]
+}

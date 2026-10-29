@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "subjectId": "tax-invoice",
+  "traps": [
+    {
+      "id": "float-tax-basis-points",
+      "trap": "float-rounding",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 39,
+          "column": 3
+        },
+        "end": {
+          "line": 39,
+          "column": 57
+        }
+      },
+      "original": "const basisPoints = Math.round(line.taxPercent * 100);",
+      "replacement": "const basisPoints = line.taxPercent * 100;",
+      "label": "killable",
+      "note": "lineTotal({unitCents:5000,quantity:1,taxPercent:0.29}).tax is 15 on src and 14 on mutant because 0.29 * 100 is just below 29. Hand tests use exactly representable rates."
+    },
+    {
+      "id": "message-invoice-fields",
+      "trap": "message-only",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 32,
+          "column": 25
+        },
+        "end": {
+          "line": 32,
+          "column": 58
+        }
+      },
+      "original": "\"invoice line has invalid fields\"",
+      "replacement": "\"bad invoice line\"",
+      "label": "contract-silent",
+      "note": "Only invalid-line error text changes; its TypeError class is specified and preserved."
+    },
+    {
+      "id": "deadflag-legacy-tax",
+      "trap": "dead-flag-branch",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 42,
+          "column": 11
+        },
+        "end": {
+          "line": 42,
+          "column": 50
+        }
+      },
+      "original": "Math.floor((net * basisPoints) / 10000)",
+      "replacement": "Math.ceil((net * basisPoints) / 10000)",
+      "label": "equivalent",
+      "note": "The expression is inside if (LEGACY_TAX) and LEGACY_TAX is the module constant false."
+    },
+    {
+      "id": "canary-invoice-net",
+      "trap": "canary",
+      "file": "src.ts",
+      "range": {
+        "start": {
+          "line": 60,
+          "column": 3
+        },
+        "end": {
+          "line": 60,
+          "column": 34
+        }
+      },
+      "original": "return invoiceTotal(lines).net;",
+      "replacement": "return 0;",
+      "label": "killable",
+      "note": "The hand suite asserts netTotal of two 100-cent units is 200, killing the zero canary."
+    }
+  ]
+}

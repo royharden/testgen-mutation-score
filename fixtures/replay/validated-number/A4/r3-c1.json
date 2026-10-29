@@ -1,0 +1,23 @@
+{
+  "response": {
+    "testFile": "import { test, expect } from \"vitest\";\nimport { parseNumber, parseNumberList, isValidNumber } from \"./src\";\ntest(\"validated-number A4 round 1 contract\", () => {\n  expect(parseNumberList(\"1, -2, 3.5\")).toEqual([1, -2, 3.5]);\n});"
+  },
+  "kind": "no-new-kill",
+  "probabilistic": false,
+  "promptSha256": "pending",
+  "arm": "A4",
+  "slot": 1,
+  "subjectId": "validated-number",
+  "expected": [
+    {
+      "testName": "validated-number A4 round 1 contract",
+      "subReason": "duplicate-unit",
+      "code": "no-new-kill",
+      "decision": "rejected"
+    }
+  ],
+  "expectTwinFailure": false,
+  "schemaVersion": 1,
+  "round": 3,
+  "note": "Deliberately repeats the exact first-round immutable unit. Once admitted, duplicate bytes cannot expand cumulative coverage or feedback kills; expected no-new-kill/duplicate-unit."
+}

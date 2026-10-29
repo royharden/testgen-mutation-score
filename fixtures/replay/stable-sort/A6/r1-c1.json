@@ -1,0 +1,23 @@
+{
+  "response": {
+    "testFile": "import { expect, test } from \"vitest\";\nimport { isSortedBy, sortBy, sortByDesc } from \"./src\";\n\ntest(\"sortBy orders numbers ascending and leaves the input alone\", () => {\n  const input = [3, 1, 2];\n  expect(sortBy(input, (n) => n)).toEqual([1, 2, 3]);\n  expect(input).toEqual([3, 1, 2]);\n});\n\ntest(\"sortBy orders records by the key function\", () => {\n  const people = [\n    { name: \"ada\", age: 36 },\n    { name: \"bob\", age: 25 },\n    { name: \"cy\", age: 51 },\n  ];\n  expect(sortBy(people, (p) => p.age).map((p) => p.name)).toEqual([\"bob\", \"ada\", \"cy\"]);\n});\n\ntest(\"sortByDesc orders by descending key\", () => {\n  expect(sortByDesc([2, 9, -4, 5], (n) => n)).toEqual([9, 5, 2, -4]);\n});\n\ntest(\"sortBy handles empty and single-item lists and returns a new array\", () => {\n  const one = [7];\n  const sorted = sortBy(one, (n) => n);\n  expect(sorted).toEqual([7]);\n  expect(sorted).not.toBe(one);\n  expect(sortBy([], (n: number) => n)).toEqual([]);\n});\n\ntest(\"isSortedBy accepts non-decreasing keys and rejects a descent\", () => {\n  expect(isSortedBy([1, 2, 2, 3], (n) => n)).toBe(true);\n  expect(isSortedBy([], (n: number) => n)).toBe(true);\n  expect(isSortedBy([1, 3, 2], (n) => n)).toBe(false);\n});\n\ntest(\"every function throws when the key is not a finite number\", () => {\n  expect(() => sortBy([\"x\"], () => Number.NaN)).toThrow();\n  expect(() => sortByDesc([1], () => Number.POSITIVE_INFINITY)).toThrow();\n  expect(() => isSortedBy([1, 2], () => Number.NaN)).toThrow();\n});\n"
+  },
+  "kind": "duplicate-kill",
+  "probabilistic": false,
+  "promptSha256": "pending",
+  "arm": "A6",
+  "slot": 1,
+  "subjectId": "stable-sort",
+  "expected": [
+    {
+      "testName": "sortBy orders numbers ascending and leaves the input alone",
+      "subReason": "duplicate-unit",
+      "code": "no-new-kill",
+      "decision": "rejected"
+    }
+  ],
+  "expectTwinFailure": false,
+  "schemaVersion": 1,
+  "round": 1,
+  "note": "A6-only exact replay of its frozen hand starting suite (within the shared 8-test cap). Every byte-identical unit is already kept, so no feedback or coverage can be newly earned."
+}
